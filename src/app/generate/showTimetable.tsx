@@ -45,12 +45,25 @@ const parseTime = (timeStr: string) => {
 
 const groupClassesByDay = (courses: Course[]) => {
   let timetable: { [key: string]: { [hour: number]: Course[] } } = {};
-
+  
   daysOfWeek.forEach((day) => {
     timetable[day] = {};
   });
 
+  const mergedCourses: Course[] = [];
+
   courses.forEach((course) => {
+    const existing = mergedCourses.find(
+      (c) => c.day === course.day && c.time === course.time && c.activity === course.activity
+    );
+    if (existing) {
+      existing.location += `, ${course.location}`;
+    } else {
+      mergedCourses.push({ ...course });
+    }
+  });
+
+  mergedCourses.forEach((course) => {
     const { start } = parseTime(course.time);
     if (!timetable[course.day][start]) {
       timetable[course.day][start] = [];
@@ -61,83 +74,21 @@ const groupClassesByDay = (courses: Course[]) => {
   return timetable;
 };
 
-
-
 const Timetable: React.FC<TimetableProps> = ({ courses, unitCode }) => {
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-    // Fetch courses and update courseList state
-    useEffect(() => {
-      const fetchCourses = async () => {
-        const Course = await getCourses();
-        setSelectedCourse(Course); // Update the courseList state with resolved data
-      };
   
-      fetchCourses(); // Call the async function inside the effect
-    }, []); // Runs only once when the component is mounted
+  useEffect(() => {
+    const fetchCourses = async () => {
+      const Course = await getCourses();
+      setSelectedCourse(Course);
+    };
+    fetchCourses();
+  }, []);
 
   const timetable = groupClassesByDay(courses);
   const hasOverlappingClasses = Object.values(timetable).some((day) =>
     Object.values(day).some((classes) => classes.length > 4)
   );
-
-  const openDialog = (course: Course) => {
-    setSelectedCourse(course);
-    setIsDialogOpen(true);
-  };
-
-  const closeDialog = () => {
-    setIsDialogOpen(false);
-    setSelectedCourse(null);
-  };
-
-  const handleOutsideClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      closeDialog();
-    }
-  };
-
-  // Handle when searching for a new unit
-  const handleRemoveTimeslot = async () => {
-    console.log("Here is the unitCode:", unitCode);
-    console.log("Here is the selectedCourse:", selectedCourse);
-
-    if (selectedCourse) {
-      // Await the removal of the timeslot
-      await removeTimeslot(unitCode, selectedCourse.id);
-
-      // Fetch the updated courses after the removal
-      const updatedCourses = await getCourses();
-      
-      // Update the state with the new courses after removal
-      setSelectedCourse(updatedCourses[unitCode]?.courses || []);
-      closeDialog();
-    }
-  };
-
-
-  // Handle when searching for a new unit
-  const handleLockCourse = async () => {
-    if (selectedCourse) {
-      const newLockedStatus = !selectedCourse.locked; // Toggle lock status
-      if (newLockedStatus) {
-        await lockCourse(selectedCourse.ID); // Call lock function
-      } else {
-        await unlockCourse(selectedCourse.ID); // Call unlock function
-      }
-
-      // Update selected course with new locked status
-      setSelectedCourse({ ...selectedCourse, locked: newLockedStatus });
-
-      // Fetch the updated courses after locking/unlocking
-      const updatedCourses = await getCourses();
-      setSelectedCourse(updatedCourses[unitCode]?.courses.find(course => course.ID === selectedCourse.ID) || null);
-      closeDialog();
-    }
-  };
-
-  
 
   return (
     <div className="w-full overflow-x-auto">
@@ -186,12 +137,13 @@ const Timetable: React.FC<TimetableProps> = ({ courses, unitCode }) => {
                         width: `${width}%`,
                         height: `${height}rem`,
                       }}
-                      onClick={() => openDialog(course)}
                     >
                       <div>
                         <strong>{unitCode}</strong>
                       </div>
-                      {course.activity} - {course.location}
+                      {course.activity}
+                      <br />
+                      {course.location}
                       <br />
                       {course.time}
                     </div>
@@ -202,58 +154,6 @@ const Timetable: React.FC<TimetableProps> = ({ courses, unitCode }) => {
           </div>
         ))}
       </div>
-
-      {isDialogOpen && selectedCourse && (
-        <div
-          onClick={handleOutsideClick}
-          className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
-        >
-          <div className="bg-gray-1000 p-6 rounded-lg max-w-lg w-full">
-            <h2 className="text-xl font-bold mb-4">Class Details</h2>
-
-            <table className="w-full text-white">
-              <tbody>
-                <tr className="custom-row-padding border-b border-gray-400">
-                  <td className="font-bold pr-4 custom-width align-top">Unit:</td>
-                  <td className="break-words">{unitCode}</td>
-                </tr>
-                <tr className="custom-row-padding border-b border-gray-400">
-                  <td className="font-bold pr-4 custom-width align-top">Activity:</td>
-                  <td className="break-words">{selectedCourse.activity}</td>
-                </tr>
-                <tr className="custom-row-padding border-b border-gray-400">
-                  <td className="font-bold pr-4 custom-width align-top">Class Type:</td>
-                  <td className="break-words">{selectedCourse.classType}</td>
-                </tr>
-                <tr className="custom-row-padding border-b border-gray-400">
-                  <td className="font-bold pr-4 custom-width align-top">Location:</td>
-                  <td className="break-words">{selectedCourse.location}</td>
-                </tr>
-                <tr className="custom-row-padding border-b border-gray-400">
-                  <td className="font-bold pr-4 custom-width align-top">Time:</td>
-                  <td className="break-words">{selectedCourse.time}</td>
-                </tr>
-                <tr className="custom-row-padding border-b border-gray-400">
-                  <td className="font-bold pr-4 custom-width align-top">Staff:</td>
-                  <td className="break-words">{selectedCourse.teachingStaff || "N/A - To be confirmed"}</td>
-                </tr>
-              </tbody>
-            </table>
-
-            <div className="mt-4 flex justify-end space-x-4">
-              <button onClick={handleLockCourse} className="px-6 py-2 bg-pink-600 text-white rounded-lg">
-                {selectedCourse.locked ? "Unlock" : "Lock"}
-              </button>
-              <button onClick={handleRemoveTimeslot} className="px-6 py-2 bg-gray-600 text-white rounded-lg">
-                Remove
-              </button>
-              <button onClick={closeDialog} className="px-6 py-2 bg-blue-500 text-white rounded-lg">
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

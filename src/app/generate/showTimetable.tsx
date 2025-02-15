@@ -43,52 +43,32 @@ const parseTime = (timeStr: string) => {
   return { start: to24Hour(start), end: to24Hour(end) };
 };
 
-// Group classes by day and combine locations for overlapping activities
+// Group classes by day without merging overlapping activities
 const groupClassesByDay = (courses: Course[]) => {
   let timetable: { [key: string]: { [hour: number]: Course[] } } = {};
 
   daysOfWeek.forEach((day) => {
     timetable[day] = {};
-    console.log(`Initialized timetable for day: ${day}`);
   });
 
   courses.forEach((course) => {
     const { start, end } = parseTime(course.time);
-    console.log(`Processing course: ${course.id} - ${course.activity} at ${course.time}`);
 
     if (!timetable[course.day][start]) {
       timetable[course.day][start] = [];
-      console.log(`Initialized time slot for ${start}:00 on ${course.day}`);
     }
 
-    // Check if the same activity is already present at the same time slot
-    const existingCourse = timetable[course.day][start].find(
-      (c) => c.activity === course.activity
-    );
-
-    if (!existingCourse) {
-      // If the same activity doesn't exist, add it
-      timetable[course.day][start].push(course);
-      console.log(`Added course: ${course.id} - ${course.activity} to timetable`);
-    } else {
-      // If the same activity exists, update the existing course to have a unique ID and merge rooms
-      if (!existingCourse.id.includes(course.id)) {
-        // Only merge if the course ID is not already present in the existing course's ID
-        existingCourse.id = `${existingCourse.id}-${course.id}`;
-        existingCourse.room = `${existingCourse.room}, ${course.room}`;
-        console.log(`Merged course: ${course.id} - ${course.activity} with existing course ${existingCourse.id}`);
-      } else {
-        // Skip adding this course since it already exists in the group
-        console.log(`Course ${course.id} is already added for this timeslot, skipping.`);
-      }
-    }
+    timetable[course.day][start].push(course);
   });
 
-  console.log('Final timetable:', timetable);
   return timetable;
 };
 
-
+// Define the color palette to cycle through
+const colorPalette = [
+  "bg-blue-1000", "bg-red-1000", "bg-green-1000", "bg-yellow-1000", 
+  "bg-purple-1000", "bg-orange-1000", "bg-pink-1000"
+];
 
 const Timetable: React.FC<TimetableProps> = ({ courses }) => {
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
@@ -97,19 +77,23 @@ const Timetable: React.FC<TimetableProps> = ({ courses }) => {
   const allCourses = Object.values(courses)
     .flatMap((courseUnit) => courseUnit.courses);
 
+  // Group courses by day
   const timetable = groupClassesByDay(allCourses);
-  const hasOverlappingClasses = Object.values(timetable).some((day) =>
-    Object.values(day).some((classes) => classes.length > 4)
-  );
+
+  // To assign colors to each unit, we will map them to colors
+  const unitColors: { [unitCode: string]: string } = {};
+
+  // Loop through the courses and assign a color to each unit
+  let colorIndex = 0;
+  allCourses.forEach((course) => {
+    if (!unitColors[course.unitCode]) {
+      unitColors[course.unitCode] = colorPalette[colorIndex % colorPalette.length];
+      colorIndex++;
+    }
+  });
 
   return (
     <div className="w-full overflow-x-auto">
-      {hasOverlappingClasses && (
-        <div className="text-red-500 text-center font-bold mb-8">
-          Warning: Too many classes running at the same time. Please filter to view specific offerings.
-        </div>
-      )}
-
       <div className="mt-6 grid grid-cols-[1fr_2fr_2fr_2fr_2fr_2fr] gap-2 text-white bg-gray-900 p-4 rounded-lg">
         <div></div>
         {daysOfWeek.map((day) => (
@@ -138,12 +122,13 @@ const Timetable: React.FC<TimetableProps> = ({ courses }) => {
                   const height = (end - start) * 4;
                   const width = 100 / arr.length;
                   const leftPosition = index * width;
-                  const courseKey = `${course.id}`;
+
+                  const courseColor = unitColors[course.unitCode]; // Get the color for the unit
 
                   return (
                     <div
-                      key={courseKey}
-                      className={`absolute text-sm p-2 rounded-md shadow-md cursor-pointer bg-blue-500`}
+                      key={course.id}
+                      className={`absolute text-sm p-2 rounded-md shadow-md cursor-pointer ${courseColor}`}
                       style={{
                         top: 0,
                         left: `${leftPosition}%`,

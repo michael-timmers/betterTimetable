@@ -13,7 +13,7 @@
   could be potentially slowing down the web app, 
   but it slightly improves UX so keeping for now*/
 .active-link {
-  background: #1a66ff !important;
+  background: #007FFF !important;
   color: white !important;
   border-radius: 9999px !important; 
   transition: all 0.3s ease-in-out;

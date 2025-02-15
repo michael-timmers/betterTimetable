@@ -43,14 +43,17 @@ export async function addCourses(unitCode, selectedPeriod) {
 
       const course = {
         id: uuidv4(), // Generate unique ID
+        unitCode: unitCode,
+        unitName: unitName,
         classType: $(element).find("td").eq(0).text().trim(),
         activity: $(element).find("td").eq(1).text().trim(),
         day: $(element).find("td").eq(2).text().trim(),
         time: $(element).find("td").eq(3).text().trim(),
-        location: $(element).find("td").eq(4).text().trim(),
+        room: $(element).find("td").eq(4).text().trim(),
         teachingStaff: $(element).find("td").eq(5).text().trim(),
-        locked: false, // Default to unlocked
       };
+
+      console.log("Here are the details of course", course);
 
       coursesDict[unitCode].courses.push(course);
     });
@@ -94,39 +97,5 @@ export async function removeTimeslot(unitCode, timeslotId) {
   coursesDict[unitCode].courses.splice(indexToRemove, 1);
 
   // Return the updated coursesDict (optional, as it updates the global state)
-  return coursesDict;
-}
-
-
-// Lock a timeslot by ID
-export async function lockCourse(id) {
-  for (const unitCode in coursesDict) {
-    coursesDict[unitCode].courses.forEach((course) => {
-      if (course.id === id) {
-        // Unlock other slots of the same activity within the same unit. where c is course
-        coursesDict[unitCode].courses.forEach((c) => {
-          if (c.activity === course.activity) {
-            c.locked = false;
-          }
-        });
-
-        // Lock the selected timeslot
-        course.locked = true;
-      }
-    });
-  }
-  return coursesDict;
-}
-
-
-// Unlock a timeslot by ID
-export async function unlockCourse(id) {
-  for (const unitCode in coursesDict) {
-    coursesDict[unitCode].courses.forEach((course) => {
-      if (course.id === id) {
-        course.locked = false;
-      }
-    });
-  }
   return coursesDict;
 }

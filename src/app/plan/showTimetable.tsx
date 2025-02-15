@@ -10,6 +10,7 @@ type Course = {
   time: string;
   location: string;
   teachingStaff: string;
+  unitCode: string; // Added unitCode to uniquely identify units
 };
 
 type TimetableProps = {
@@ -17,6 +18,7 @@ type TimetableProps = {
   unitCode: string;
   unitName: string;
   lockedSlots: string[];
+  setLockedSlots: (lockedSlots: string[]) => void;
 };
 
 const daysOfWeek = ["MON", "TUE", "WED", "THU", "FRI"];
@@ -44,6 +46,7 @@ const parseTime = (timeStr: string) => {
   return { start: to24Hour(start), end: to24Hour(end) };
 };
 
+// Group classes by day and unitCode
 const groupClassesByDay = (courses: Course[]) => {
   let timetable: { [key: string]: { [hour: number]: Course[] } } = {};
 
@@ -62,17 +65,24 @@ const groupClassesByDay = (courses: Course[]) => {
   return timetable;
 };
 
+// Color cycle for different units
+const colorCycle = [
+  "bg-blue-1000", "bg-red-1000", "bg-green-1000", "bg-yellow-1000",
+  "bg-purple-1000", "bg-orange-1000", "bg-pink-1000"
+];
+
 const Timetable: React.FC<TimetableProps> = ({ courses, unitCode, unitName, lockedSlots, setLockedSlots }) => {
-
-  console.log("Here are the locked slots entries via timetable.ts: ", lockedSlots);
-
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
+  // Group classes by day and time
   const timetable = groupClassesByDay(courses);
   const hasOverlappingClasses = Object.values(timetable).some((day) =>
     Object.values(day).some((classes) => classes.length > 4)
   );
+
+  // Get unique unit codes from the courses
+  const uniqueUnits = Array.from(new Set(courses.map((course) => course.unitCode)));
 
   const openDialog = (course: Course) => {
     setSelectedCourse(course);
@@ -97,12 +107,10 @@ const Timetable: React.FC<TimetableProps> = ({ courses, unitCode, unitName, lock
         updatedLockedSlots = manageSlots("add", course, unitCode);
     }
 
-    // Pass the updated locked slots back up
-    setLockedSlots(updatedLockedSlots); // In SearchTimetable, update state for lockedSlots
+    setLockedSlots(updatedLockedSlots); 
     closeDialog();
-};
+  };
 
-  
   const handleOutsideClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
       closeDialog();
@@ -145,22 +153,15 @@ const Timetable: React.FC<TimetableProps> = ({ courses, unitCode, unitName, lock
                   const height = (end - start) * 4;
                   const width = 100 / arr.length;
                   const leftPosition = index * width;
-                  const courseKey = `${course.activity}-${course.day}-${course.time}-${course.location}`;
+
+                  // Get the unit index to assign the color
+                  const unitIndex = uniqueUnits.indexOf(course.unitCode);
+                  const colorClass = colorCycle[unitIndex % colorCycle.length]; // Cycle through colors
 
                   return (
                     <div
                       key={index}
-                      className={`absolute text-sm p-2 rounded-md shadow-md cursor-pointer ${
-                        lockedSlots.some(
-                          (slot) =>
-                            slot.day === course.day &&
-                            slot.time === course.time &&
-                            slot.activity === course.activity &&
-                            slot.location === course.location 
-                        ) 
-                          ? "bg-pink-500" 
-                          : "bg-blue-500"
-                        }`}
+                      className={`absolute text-sm p-2 rounded-md shadow-md cursor-pointer ${colorClass}`}
                       style={{
                         top: 0,
                         left: `${leftPosition}%`,

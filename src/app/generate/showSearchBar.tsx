@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { getCourses, addCourses, removeCourses } from "./getCourseData";
 import { getTeachingPeriods } from "./getTeachingPeriods";
 import Timetable from "./showTimetable";
+import filterCourseList from "./allocationAlgorithm";
+
 
 const SearchTimetable = () => {
   // Establish the variables that require updating
@@ -91,6 +93,7 @@ const SearchTimetable = () => {
   };
 
   console.log("Entries!!", courseList);
+      
 
   return (
     <div className="min-h-screen flex flex-col items-center p-12 text-white">
@@ -201,13 +204,14 @@ const SearchTimetable = () => {
 
           <div className="border-b border-gray-500 w-full my-4"></div>
 
-          <Timetable courses={courseList} />
+          <Timetable courses={filterCourseList(courseList)} />
 
-          {/* Display the course list in JSON format */}
-          <div className="mt-6 w-full bg-gray-800 p-4 rounded-lg">
+           {/* Display the course list in JSON format */}
+           <div className="mt-6 w-full bg-gray-800 p-4 rounded-lg">
             <h2 className="text-xl mb-2">Updated Course List (JSON Format):</h2>
             <pre className="text-sm text-gray-300">{JSON.stringify(courseList, null, 2)}</pre>
           </div>
+
         </>
       )}
     </div>

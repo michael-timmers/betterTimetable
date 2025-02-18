@@ -1,22 +1,39 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getCourses, addCourses, removeCourses } from "./getCourseData";
-import { getTeachingPeriods } from "./getTeachingPeriods";
 import Timetable from "./showTimetable";
 import filterCourseList from "./allocationAlgorithm";
+
+interface Course {
+  id: string;
+  unitCode: string;
+  unitName: string;
+  classType: string;
+  activity: string;
+  day: string;
+  time: string;
+  room: string;
+  teachingStaff: string;
+}
+
+interface CourseData {
+  unitName: string;
+  courses: Course[];
+}
+
 
 
 const SearchTimetable = () => {
   // Establish the variables that require updating
   const [unitCode, setUnitCode] = useState("");
-  const [courseList, setCourseList] = useState({}); // Keep it as an object to store course data by unitCode
+  const [courseList, setCourseList] = useState<{ [key: string]: CourseData }>({});
   const [teachingPeriods, setTeachingPeriods] = useState([]);
   const [selectedPeriod, setSelectedPeriod] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [isPeriodDisabled, setIsPeriodDisabled] = useState(false);
-  const [showTimetable, setShowTimetable] = useState(false); // To toggle between the sections
+  const [error, setError] = useState<string | null>(null);
+  const [showTimetable, setShowTimetable] = useState(false);
+  const [validPeriods, setValidPeriods] = useState([]); // Store valid teaching periods that returned data
+  const [showDialog, setShowDialog] = useState(false); // Control the dialog box visibility
 
   // Reset variables when accessing the page initially
   useEffect(() => {
@@ -26,24 +43,26 @@ const SearchTimetable = () => {
     setLoading(false);
   }, []); // Empty dependency array ensures this effect runs only once when the component is mounted
 
-  // Fetch the teaching periods from the given URL
+
+  // Fetch the teaching periods from the API
   useEffect(() => {
     const fetchTeachingPeriods = async () => {
-      const periods = await getTeachingPeriods();
-      setTeachingPeriods(periods);
+      try {
+        const response = await fetch("/api/teaching-data");
+        const data = await response.json();
+
+        if (!data || data.error) {
+          setError("Failed to fetch teaching periods");
+        } else {
+          setTeachingPeriods(data); // Set the fetched periods
+        }
+      } catch {
+        setError("Failed to fetch teaching periods");
+      }
     };
+
     fetchTeachingPeriods();
   }, []);
-
-  // Fetch courses and update courseList state
-  useEffect(() => {
-    const fetchCourses = async () => {
-      const courses = await getCourses();
-      setCourseList(courses); // Update the courseList state with resolved data
-    };
-
-    fetchCourses(); // Call the async function inside the effect
-  }, []); // Runs only once when the component is mounted
 
   // Handle when searching for a new unit
   const handleSearch = async () => {
@@ -54,42 +73,47 @@ const SearchTimetable = () => {
 
     setLoading(true);
     setError(null);
-    
+
     try {
       const formattedUnitCode = unitCode.toUpperCase(); // Capitalize unit code
 
-      // Fetch the latest courses dictionary after adding the new unit
-      const data = await addCourses(formattedUnitCode, selectedPeriod);
+      // Fetch data from the Next.js API
+      const response = await fetch(
+        `/api/course-data?unitCode=${formattedUnitCode}&teachingPeriod=${selectedPeriod}`
+      );
+      const data = await response.json();
 
-      if (!data) {
+      if (!data || data.error) {
         setError("No unit found");
       } else {
-        // Update the courseList state with the new courses for the added unit code
-        setCourseList(data);
-        setIsPeriodDisabled(true);
+        // Check if data contains the unitCode key
+        const unitData = data[formattedUnitCode]; // Extract unit data under the key
+        if (unitData) {
+          // Update the courseList state with the fetched data
+          setCourseList((prevCourses) => ({
+            ...prevCourses,
+            [formattedUnitCode]: unitData, // Add the unit's data to courseList
+          }));
+        } else {
+          setError("No data found for this unit.");
+        }
       }
-    } catch {
+    } catch (error) {
       setError("Failed to fetch courses");
     } finally {
       setLoading(false);
     }
   };
 
-  // Handle removal of a unit code from the course list
-  const handleRemoveUnit = async (unitCodeToRemove) => {
-    try {
-      await removeCourses(unitCodeToRemove);
-      const updatedCourseList = { ...courseList };
-      delete updatedCourseList[unitCodeToRemove];
-      setCourseList(updatedCourseList);
 
-      if (Object.keys(updatedCourseList).length === 0) {
-        setIsPeriodDisabled(false);
-        setSelectedPeriod("");
-      }
-    } catch (error) {
-      setError("Failed to remove unit");
-    }
+
+  // Handle removal of a unit code from the course list
+  const handleRemoveUnit = async (unitCodeToRemove: string) => {
+    setCourseList((prevCourses) => {
+      const updatedCourses = { ...prevCourses };
+      delete updatedCourses[unitCodeToRemove]; // Remove the unit from the dictionary
+      return updatedCourses;
+    });
   };
 
   console.log("Entries!!", courseList);
@@ -117,14 +141,17 @@ const SearchTimetable = () => {
               className="w-48 px-6 py-3 rounded-lg bg-gray-1200"
               value={selectedPeriod}
               onChange={(e) => setSelectedPeriod(e.target.value)}
-              disabled={isPeriodDisabled}
             >
               <option value="">Teaching period</option>
-              {teachingPeriods.map((period) => (
-                <option key={period.value} value={period.value}>
-                  {period.text}
-                </option>
-              ))}
+              {teachingPeriods.length > 0 ? (
+                teachingPeriods.map((period, index) => (
+                  <option key={index} value={period.value}>
+                    {period.text}
+                  </option>
+                ))
+              ) : (
+                <option value="">No periods available</option>
+              )}
             </select>
 
             {/* Search button that triggers the search action */}

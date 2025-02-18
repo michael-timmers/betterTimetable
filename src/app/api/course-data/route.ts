@@ -20,8 +20,8 @@ export async function GET(request: { url: string | URL; }) {
     // Extract the unit name
     const unitName = $("h2").eq(1).text().trim();
     if (!unitName) {
-      // If unit name is not found, return null to indicate failure
-      return null;
+      // If unit name is not found, return an empty response instead of null
+      return NextResponse.json({});
     }
 
     const courses: {
@@ -55,10 +55,10 @@ export async function GET(request: { url: string | URL; }) {
       courses.push(course); // Add the course to the array
     });
 
-    // If no courses are found, return null
+    // If no courses are found, return an empty response instead of null
     if (courses.length === 0) {
-      console.log("No data found")
-      return null;
+      console.log("No data found");
+      return NextResponse.json({});
     }
 
     // Ensure unitCode is valid (fallback to empty string if null)
@@ -67,6 +67,7 @@ export async function GET(request: { url: string | URL; }) {
     // Return the array of courses directly, using the valid unit code as the property name
     return NextResponse.json({ [validUnitCode]: { unitName, courses } });
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to process request' }, { status: 500 });
+    // If any error occurs, return an empty response instead of a 500 error
+    return NextResponse.json({});
   }
 }

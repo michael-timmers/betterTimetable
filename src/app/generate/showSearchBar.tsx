@@ -21,8 +21,6 @@ interface CourseData {
   courses: Course[];
 }
 
-
-
 const SearchTimetable = () => {
   // Establish the variables that require updating
   const [unitCode, setUnitCode] = useState("");
@@ -43,18 +41,16 @@ const SearchTimetable = () => {
     setLoading(false);
   }, []); // Empty dependency array ensures this effect runs only once when the component is mounted
 
-
   // Fetch the teaching periods from the API
   useEffect(() => {
     const fetchTeachingPeriods = async () => {
       try {
         const response = await fetch("/api/teaching-data");
         const data = await response.json();
-
         if (!data || data.error) {
           setError("Failed to fetch teaching periods");
         } else {
-          setTeachingPeriods(data); // Set the fetched periods
+          setTeachingPeriods(data);
         }
       } catch {
         setError("Failed to fetch teaching periods");
@@ -63,40 +59,48 @@ const SearchTimetable = () => {
 
     fetchTeachingPeriods();
   }, []);
-
-  // Handle when searching for a new unit
   const handleSearch = async () => {
-    if (!unitCode || !selectedPeriod) {
-      setError("Please enter unit code and select a teaching period");
+    if (!unitCode) {
+      setError("Please enter a unit code");
       return;
     }
-
+  
     setLoading(true);
     setError(null);
-
+    setValidPeriods([]); // Reset valid periods on each search
+  
     try {
-      const formattedUnitCode = unitCode.toUpperCase(); // Capitalize unit code
-
-      // Fetch data from the Next.js API
-      const response = await fetch(
-        `/api/course-data?unitCode=${formattedUnitCode}&teachingPeriod=${selectedPeriod}`
-      );
-      const data = await response.json();
-
-      if (!data || data.error) {
-        setError("No unit found");
-      } else {
-        // Check if data contains the unitCode key
-        const unitData = data[formattedUnitCode]; // Extract unit data under the key
-        if (unitData) {
-          // Update the courseList state with the fetched data
-          setCourseList((prevCourses) => ({
-            ...prevCourses,
-            [formattedUnitCode]: unitData, // Add the unit's data to courseList
-          }));
-        } else {
-          setError("No data found for this unit.");
+      const formattedUnitCode = unitCode.toUpperCase();
+      let validResults = [];
+  
+      for (let period of teachingPeriods) {
+        console.log("Fetching data for period:", period.value);
+  
+        const response = await fetch(
+          `/api/course-data?unitCode=${formattedUnitCode}&teachingPeriod=${period.value}`
+        );
+        const data = await response.json();
+        console.log("Response data:", data);
+  
+        // Check if the data is empty (i.e., no courses returned)
+        if (Object.keys(data).length === 0) {
+          console.log("No data found for this teaching period");
+          continue; // Skip this period, no valid data for it
         }
+  
+        // Check if there are no errors in the data
+        if (data && !data.error) {
+          validResults.push({ text: period.text, value: period.value });
+        }
+      }
+  
+      // Set valid periods after all calls
+      setValidPeriods(validResults);
+  
+      if (validResults.length === 0) {
+        setError("No valid periods found for this unit.");
+      } else {
+        setShowDialog(true); // Show dialog with the valid periods
       }
     } catch (error) {
       setError("Failed to fetch courses");
@@ -104,20 +108,38 @@ const SearchTimetable = () => {
       setLoading(false);
     }
   };
+  
+  const handleAddUnit = async (unitCode: string) => {
+    if (selectedPeriod) {
+      // Add the unit to the course list
 
+      const formattedUnitCode = unitCode.toUpperCase(); // Capitalize unit code
+      const response = await fetch(
+        `/api/course-data?unitCode=${formattedUnitCode}&teachingPeriod=${selectedPeriod}`
+      );
+      const data = await response.json();
+      const unitData = data[formattedUnitCode]; // Extract unit data under the key
+         // Update the courseList state with the fetched data
+         setCourseList((prevCourses) => ({
+          ...prevCourses,
+          [formattedUnitCode]: unitData, // Add the unit's data to courseList
+        }));
 
+      setShowDialog(false);
+    } else {
+      setError("Please select a valid teaching period.");
+    }
+  };
 
-  // Handle removal of a unit code from the course list
-  const handleRemoveUnit = async (unitCodeToRemove: string) => {
+  const handleRemoveUnit = (unitCodeToRemove: string) => {
     setCourseList((prevCourses) => {
       const updatedCourses = { ...prevCourses };
-      delete updatedCourses[unitCodeToRemove]; // Remove the unit from the dictionary
+      delete updatedCourses[unitCodeToRemove];
       return updatedCourses;
     });
   };
 
   console.log("Entries!!", courseList);
-      
 
   return (
     <div className="min-h-screen flex flex-col items-center p-12 text-white">
@@ -136,24 +158,6 @@ const SearchTimetable = () => {
               onChange={(e) => setUnitCode(e.target.value)}
             />
 
-            {/* Dropdown menu for selecting teaching period */}
-            <select
-              className="w-48 px-6 py-3 rounded-lg bg-gray-1200"
-              value={selectedPeriod}
-              onChange={(e) => setSelectedPeriod(e.target.value)}
-            >
-              <option value="">Teaching period</option>
-              {teachingPeriods.length > 0 ? (
-                teachingPeriods.map((period, index) => (
-                  <option key={index} value={period.value}>
-                    {period.text}
-                  </option>
-                ))
-              ) : (
-                <option value="">No periods available</option>
-              )}
-            </select>
-
             {/* Search button that triggers the search action */}
             <button
               onClick={handleSearch}
@@ -169,23 +173,17 @@ const SearchTimetable = () => {
 
           {/* Show unit codes added to courseList */}
           <div className="flex space-x-4 mb-6 flex-wrap">
-            {/* Sort the unit codes in alphabetical order */}
             {Object.keys(courseList)
-              .sort((a, b) => a.localeCompare(b)) // Sort unit codes alphabetically
+              .sort((a, b) => a.localeCompare(b))
               .map((unit) => (
-                <div
-                  key={unit}
-                  className="flex flex-col items-center"
-                >
-                  <div
-                    className={`relative px-8 py-2 rounded-full flex items-center space-x-2 cursor-pointer bg-gray-600 text-white`}
-                  >
-                    <span className="mr-2">{unit.toUpperCase()}</span> {/* Move text to the left */}
+                <div key={unit} className="flex flex-col items-center">
+                  <div className="relative px-8 py-2 rounded-full flex items-center space-x-2 cursor-pointer bg-gray-600 text-white">
+                    <span className="mr-2">{unit.toUpperCase()}</span>
                     <span
                       className="absolute right-2 text-gray-300 cursor-pointer"
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleRemoveUnit(unit); // Handle removing unit
+                        handleRemoveUnit(unit);
                       }}
                     >
                       ✖
@@ -194,6 +192,49 @@ const SearchTimetable = () => {
                 </div>
               ))}
           </div>
+
+          {showDialog && (
+            <div
+              className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+              onClick={() => setShowDialog(false)} // Close dialog when clicking outside
+            >
+              <div
+                className="bg-gray-1100 p-6 rounded-lg relative"
+                onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the dialog
+              >
+                {/* Cross button to close the dialog */}
+                <button
+                  onClick={() => setShowDialog(false)}
+                  className="absolute top-2 right-2 text-gray-500 hover:text-gray-800"
+                >
+                  ✖
+                </button>
+
+                <h2 className="text-xl mb-4">Select a Teaching Period</h2>
+                <select
+                  className="mb-4 px-6 py-2 rounded-lg bg-gray-1200 text-white"
+                  value={selectedPeriod}
+                  onChange={(e) => setSelectedPeriod(e.target.value)}
+                >
+                  <option value="">Select period</option>
+                  {validPeriods.map((period) => (
+                    <option key={period.value} value={period.value}>
+                      {period.text}
+                    </option>
+                  ))}
+                </select>
+                <div>
+                  <button
+                    onClick={() => handleAddUnit(unitCode)}  // Pass unitCode when button is clicked
+                    className="px-6 py-2 bg-blue-1000 text-white hover:bg-blue-1100 rounded-full"
+                  >
+                    Add Unit
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
 
           <div className="border-b border-gray-500 w-full my-4"></div>
 
@@ -207,15 +248,16 @@ const SearchTimetable = () => {
               }
             }}
             className={`px-6 py-2 text-white rounded-full mt-4 ${
-              Object.keys(courseList).length === 0 ? "bg-gray-600 cursor-not-allowed" : "bg-blue-1000 hover:bg-blue-1100"
+              Object.keys(courseList).length === 0
+                ? "bg-gray-600 cursor-not-allowed"
+                : "bg-blue-1000 hover:bg-blue-1100"
             }`}
             disabled={Object.keys(courseList).length === 0} // Disable button when no units are selected
           >
             {Object.keys(courseList).length === 0
-              ? "Add Unit to generate timetable"
-              : "Generate Timetable"}
+              ? "Add Units"
+              : "NEXT"}
           </button>
-
         </>
       ) : (
         <>
@@ -233,12 +275,11 @@ const SearchTimetable = () => {
 
           <Timetable courses={filterCourseList(courseList)} />
 
-           {/* Display the course list in JSON format */}
-           <div className="mt-6 w-full bg-gray-800 p-4 rounded-lg">
+          {/* Display the course list in JSON format */}
+          <div className="mt-6 w-full bg-gray-800 p-4 rounded-lg">
             <h2 className="text-xl mb-2">Updated Course List (JSON Format):</h2>
             <pre className="text-sm text-gray-300">{JSON.stringify(courseList, null, 2)}</pre>
           </div>
-
         </>
       )}
     </div>

@@ -59,9 +59,16 @@ const SearchTimetable = () => {
 
     fetchTeachingPeriods();
   }, []);
+
+
   const handleSearch = async () => {
     if (!unitCode) {
       setError("Please enter a unit code");
+      return;
+    }
+
+    if (courseList[unitCode.toUpperCase()]) {
+      setError("Unit already added");
       return;
     }
   

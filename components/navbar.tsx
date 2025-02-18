@@ -54,7 +54,7 @@ export default function Navbar({ user }) {
               <li><a className="text-lg">Home</a></li>
               <li><a className="text-lg">Generate</a></li>
               <li><a className="text-lg">Plan</a></li>
-              <li><a className="text-lg">Compare</a></li>
+              <li><a className="text-lg">Saved</a></li>
             </ul>
           )}
         </div>
@@ -72,7 +72,7 @@ export default function Navbar({ user }) {
             { name: "Home", href: "/" },
             { name: "Generate", href: "/generate" },
             { name: "Plan", href: "/plan" },
-            { name: "Compare", href: "/compare" },
+            { name: "Saved", href: "/saved" },
           ].map(({ name, href }) => (
             <li key={href}>
               <Link

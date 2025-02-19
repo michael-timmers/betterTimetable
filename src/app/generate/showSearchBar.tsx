@@ -21,6 +21,7 @@ interface CourseData {
   courses: Course[];
 }
 
+
 const SearchTimetable = () => {
   // Establish the variables that require updating
   const [unitCode, setUnitCode] = useState("");
@@ -146,16 +147,54 @@ const SearchTimetable = () => {
     });
   };
 
+
+  // Define the same color palette used in Timetable.tsx
+  const colorPalette = [
+    "bg-blue-1000", "bg-red-1000", "bg-green-1000", "bg-yellow-1000", 
+    "bg-purple-1000", "bg-orange-1000", "bg-pink-1000"
+  ];
+
+  // Assign colors to each unit
+  const unitColors: { [unitCode: string]: string } = {};
+  let colorIndex = 0;
+  Object.keys(courseList).forEach((unit) => {
+    if (!unitColors[unit]) {
+      unitColors[unit] = colorPalette[colorIndex % colorPalette.length];
+      colorIndex++;
+    }
+  });
+
   console.log("Entries!!", courseList);
 
   return (
     <div className="min-h-screen flex flex-col items-center p-12 text-white">
       {!showTimetable ? (
         <>
-          <h1 className="text-3xl mb-4">Generate Timetable</h1>
+          <div className="mt-12 mb-4 w-full flex items-center relative">
+            <h1 className="text-4xl absolute left-1/2 transform -translate-x-1/2">
+              Add your Units
+            </h1>
+            <button
+              onClick={() => {
+                if (Object.keys(courseList).length === 0) {
+                  setError("Add Unit to generate timetable");
+                } else {
+                  setShowTimetable(true);
+                }
+              }}
+              className={`ml-auto px-6 py-2 text-white rounded-full ${
+                Object.keys(courseList).length === 0
+                  ? "bg-gray-600 cursor-not-allowed"
+                  : "bg-blue-1000 hover:bg-blue-1100"
+              }`}
+              disabled={Object.keys(courseList).length === 0}
+            >
+              NEXT
+            </button>
+          </div>
 
           {/* Search feature */}
-          <div className="mb-6 flex items-center justify-center space-x-4">
+          <div className="mt-10 mb-16 flex items-center justify-center space-x-4">
             {/* Input field for unit code */}
             <input
               type="text"
@@ -171,7 +210,7 @@ const SearchTimetable = () => {
               className="px-6 py-2 bg-blue-1000 text-white hover:bg-blue-1100 rounded-full"
               disabled={loading}
             >
-              {loading ? "Searching..." : "Search"}
+              {loading ? "Searching..." : "Add"}
             </button>
           </div>
 
@@ -183,11 +222,15 @@ const SearchTimetable = () => {
             {Object.keys(courseList)
               .sort((a, b) => a.localeCompare(b))
               .map((unit) => (
-                <div key={unit} className="flex flex-col items-center">
-                  <div className="relative px-8 py-2 rounded-full flex items-center space-x-2 cursor-pointer bg-gray-600 text-white">
-                    <span className="mr-2">{unit.toUpperCase()}</span>
+                <div key={unit} className="flex flex-col items-center group">
+                  <div
+                    className={`relative px-6 py-10 rounded-full flex items-center justify-center text-white ${unitColors[unit]}`}
+                  >
+                    <span className="text-lg">{unit.toUpperCase()}</span>
+                    
+                    {/* The 'X' button will show only on hover */}
                     <span
-                      className="absolute right-2 text-gray-300 cursor-pointer"
+                      className="absolute bottom-2 text-gray-300 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleRemoveUnit(unit);
@@ -199,6 +242,7 @@ const SearchTimetable = () => {
                 </div>
               ))}
           </div>
+
 
           {showDialog && (
             <div
@@ -242,29 +286,6 @@ const SearchTimetable = () => {
             </div>
           )}
 
-
-          <div className="border-b border-gray-500 w-full my-4"></div>
-
-          {/* Generate button to show timetable */}
-          <button
-            onClick={() => {
-              if (Object.keys(courseList).length === 0) {
-                setError("Add Unit to generate timetable");
-              } else {
-                setShowTimetable(true);
-              }
-            }}
-            className={`px-6 py-2 text-white rounded-full mt-4 ${
-              Object.keys(courseList).length === 0
-                ? "bg-gray-600 cursor-not-allowed"
-                : "bg-blue-1000 hover:bg-blue-1100"
-            }`}
-            disabled={Object.keys(courseList).length === 0} // Disable button when no units are selected
-          >
-            {Object.keys(courseList).length === 0
-              ? "Add Units"
-              : "NEXT"}
-          </button>
         </>
       ) : (
         <>

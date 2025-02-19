@@ -37,7 +37,7 @@ export default function Navbar({ user }) {
           <div
             tabIndex={0}
             role="button"
-            className="btn btn-ghost lg:hidden"
+            className="btn btn-ghost sm:hidden"
             onClick={toggleDropdown} // Toggle dropdown on click
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -66,7 +66,7 @@ export default function Navbar({ user }) {
         </Link>
       </div>
 
-      <div className="navbar-center hidden lg:flex">
+      <div className="navbar-center hidden sm:flex">
         <ul className="menu menu-horizontal text-white">
           {[
             { name: "Home", href: "/" },

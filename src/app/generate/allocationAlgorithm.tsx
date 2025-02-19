@@ -1,6 +1,11 @@
 const filterCourseList = (courseList) => {
   let filteredCourses = {};
-  let courseTimes = []; // Tracks globally selected courses' times to avoid duplicates
+  let courseTimes = {}; // Tracks selected course times by day
+
+  // Initialize courseTimes
+  ["MON", "TUE", "WED", "THU", "FRI"].forEach(day => {
+    courseTimes[day] = [];
+  });
 
   Object.keys(courseList).forEach((unitCode) => {
     filteredCourses[unitCode] = {
@@ -9,38 +14,62 @@ const filterCourseList = (courseList) => {
     };
 
     let selectedActivities = new Set(); // Keeps track of selected activity types for the unit
-    let selectedCourses = []; // Stores selected courses for time conflict checking within the unit
+    let unitCourses = courseList[unitCode].courses;
 
-    courseList[unitCode].courses.forEach((course) => {
-      const activityType = course.activity;
-      const courseStart = new Date(`1970-01-01T${course.startTime}`); // Convert time to comparable Date object
-      const courseEnd = new Date(`1970-01-01T${course.endTime}`);
+    // Group courses by activity type (e.g., "LEC", "TUT", etc.)
+    let activityGroups = {};
+    unitCourses.forEach((course) => {
+      if (!activityGroups[course.activity]) {
+        activityGroups[course.activity] = [];
+      }
+      activityGroups[course.activity].push(course);
+    });
 
-      // Skip this course if we already selected a course for this activity type
-      if (!selectedActivities.has(activityType)) {
-        // Check for time conflicts with other courses in the same unit
-        let hasConflict = selectedCourses.some((selectedCourse) => {
-          const selectedStart = new Date(`1970-01-01T${selectedCourse.startTime}`);
-          const selectedEnd = new Date(`1970-01-01T${selectedCourse.endTime}`);
+    // Process each activity type
+    Object.keys(activityGroups).forEach((activityType) => {
+      let chosenCourse = null;
 
-          return (courseStart < selectedEnd && courseEnd > selectedStart); // Time overlap
+      // Step 1: Try to find a course that doesn't clash
+      for (let course of activityGroups[activityType]) {
+        const [startTime, endTime] = course.time.split(" - ");
+        const courseStart = new Date(`1970-01-01T${startTime}`);
+        const courseEnd = new Date(`1970-01-01T${endTime}`);
+
+        let hasConflict = courseTimes[course.day].some((selected) => {
+          return (
+            (courseStart < selected.end && courseEnd > selected.start) // Time overlap
+          );
         });
 
-        // If no conflict within the unit, add the course and mark the activity as selected
         if (!hasConflict) {
-          selectedCourses.push(course);
-          selectedActivities.add(activityType); // Ensure only one course of each activity type is selected
-          filteredCourses[unitCode].courses.push(course);
-
-          // Add this course's time slot to global time tracking to prevent duplicates across all units
-          courseTimes.push({
-            start: courseStart,
-            end: courseEnd,
-            unitCode: unitCode,
-            activityType: activityType
-          });
+          chosenCourse = course;
+          break;
         }
       }
+
+      // Step 2: If all options conflict, pick the first one (must have at least one)
+      if (!chosenCourse) {
+        chosenCourse = activityGroups[activityType][0];
+      }
+
+      // Add selected course to filtered list
+      filteredCourses[unitCode].courses.push(chosenCourse);
+      selectedActivities.add(activityType);
+
+      // Register this course's time in the global tracker
+      const [finalStartTime, finalEndTime] = chosenCourse.time.split(" - ");
+      const selectedStart = new Date(`1970-01-01T${finalStartTime}`);
+      const selectedEnd = new Date(`1970-01-01T${finalEndTime}`);
+
+      courseTimes[chosenCourse.day].push({
+        start: selectedStart,
+        end: selectedEnd,
+        unitCode: unitCode,
+        activityType: activityType
+      });
+
+      // Step 3: If conflicts exist, try to swap the conflicting class
+      courseTimes[chosenCourse.day] = courseTimes[chosenCourse.day].sort((a, b) => a.start - b.start); // Keep times ordered
     });
   });
 

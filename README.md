@@ -1,16 +1,16 @@
 
 # BetterTimetable
 
-The BetterTimetable project, developed for Code Network using ** NextJS (TypsScript) **, enhances students' experience by creating a user-friendly timetable. It integrates React elements for effective data display and uses server components to process QUT course data into an organized API, which populates timetables based on student preferences.
+The BetterTimetable project, developed for Code Network using **NextJS (TypsScript)**, enhances students' experience by creating a user-friendly timetable. It integrates React elements for effective data display and uses server components to process QUT course data into an organized API, which populates timetables based on student preferences.
 
 
 ## 📌 Features
-**Generate **
+**Generate**
 - Select Units to be included in generated timetable
 - Select your personal needs, including which days to have off, earliest and latest class times, etc
 - View a generated timetable that suits your needs
   
-**Plan **
+**Plan**
 - Add Units to the Sidebar for consideration
 - Hover over unit activities to see all available timeslots
 - Select timeslots to be added to the timetable
@@ -18,7 +18,7 @@ The BetterTimetable project, developed for Code Network using ** NextJS (TypsScr
 - Save created timetable plans
 - Load previously saved timetable plans
   
-**Saved **
+**Saved**
 - See collection of previously saved timetables
 - Rename previously saved timetables
 - Delete previously saved timetables
@@ -61,7 +61,7 @@ npm run dev
 - **TypeScript**: for type-safe JavaScript development.
 - **HTML**: for structuring the web pages.
 - **CSS**: for global styling
-- **Tailwind CSS: for utility-first CSS framework.
+- **Tailwind CSS**: for utility-first CSS framework.
 - **React**: as the library for building user interfaces.
 - **Drizzle ORM**: for object-relational mapping.
 - **SQL**: for database management.
@@ -69,12 +69,12 @@ npm run dev
 
 ## 🧪 Methodology
 API Data Pipeline
-- Get Course Data: Fetch QUT Course Data to identify activities for each unit and their timeslots
-- Get Teaching Periods: Fetch QUT Teaching Periods to identify when courses are offered
+- **Get Course Data**: Fetch QUT Course Data to identify activities for each unit and their timeslots
+- **Get Teaching Periods**: Fetch QUT Teaching Periods to identify when courses are offered
 
 Manage Data and Show Timetable
-- Allocate Timeslots: Extract one timeslot from each given activity that does not clash. Consider student needs when selecting timeslots
-- Output Timetable: Show a grid output of the given timeslots for the selected units
+- **Allocate Timeslots**: Extract one timeslot from each given activity that does not clash. Consider student needs when selecting timeslots
+- **Output Timetable**: Show a grid output of the given timeslots for the selected units
 
 
 ## 🌟 If You Are Interested

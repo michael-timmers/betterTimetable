@@ -26,23 +26,22 @@ Saved
 
 ## 🚀 Installation
 1. Install GitHub Desktop
-```bash
-[git clone https://github.com/codenetwork/betterTimetable.git](https://github.com/apps/desktop)
-```
+   
+https://github.com/apps/desktop
 
 2. Clone the repository
 ```bash
 git clone https://github.com/codenetwork/betterTimetable.git
 ```
 
-4. Open the project in VS Code
+3. Open the project in VS Code
 
-5. Install necessary dependencies
+4. Install necessary dependencies
 ```bash
 npm install
 ```
 
-6. Duplicate `.env.example` to `.env` and update the `DATABASE_URL` to have your username, password, and port.
+5. Duplicate `.env.example` to `.env` and update the `DATABASE_URL` to have your username, password, and port.
 
 
 ## 🖥️ Usage

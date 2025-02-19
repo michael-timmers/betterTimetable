@@ -1,45 +1,79 @@
 
 # BetterTimetable
 
-This is the repository created for the Code Network BetterTimetable Project. Please let me (Zac) know if you encounter any issues while following these instructions.
+The BetterTimetable project, developed for Code Network using NextJS, enhances students' experience by creating a user-friendly timetable. It integrates React elements for effective data display and uses server components to process QUT course data into an organized API, which populates timetables based on student preferences.
 
-## Setting up the Project
 
-1. Run `npm install` to install the necessary dependencies.
-2. While that is happening, duplicate `.env.example` to `.env` and update the `DATABASE_URL` to have your username, password, and port.
-3. Once the dependencies are installed and your SQL connection string is correct, run `npm run db:reset` to initialise your database with the correct schema and to seed the database (i.e. insert the default objects)
-4. Finally, run `npm run dev` and then navigate to `http://localhost:3000`. You should be presented with a login screen where you can login using one of the pre-prepared credentials listed below.
+## 📌 Features
+Generate
+- Select Units to be included in generated timetable
+- Select your personal needs, including which days to have off, earliest and latest class times, etc
+- View a generated timetable that suits your needs
+  
+Plan
+- Add Units to the Sidebar for consideration
+- Hover over unit activities to see all available timeslots
+- Select timeslots to be added to the timetable
+- See count of required number of activities to be added to timetable
+- Save created timetable plans
+- Load previously saved timetable plans
+  
+Saved
+- See collection of previously saved timetables
+- Rename previously saved timetables
+- Delete previously saved timetables
+  
 
-## Pre-prepared Credentials
-
-| Username | Password | Full name   |
-| -------- | -------- | ----------- |
-| username | password | John Doe    |
-| abc      | 123      | Alice Smith |
-
-# Original Instructions (for posterity)
-
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
-
-## Getting Started
-
-First, run the development server:
-
+## 🚀 Installation
+1. Install GitHub Desktop
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+[git clone https://github.com/codenetwork/betterTimetable.git](https://github.com/apps/desktop)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Clone the repository
+```bash
+git clone https://github.com/codenetwork/betterTimetable.git
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+4. Open the project in VS Code
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+5. Install necessary dependencies
+```bash
+npm install
+```
+
+6. Duplicate `.env.example` to `.env` and update the `DATABASE_URL` to have your username, password, and port.
+
+
+## 🖥️ Usage
+Running BetterTimetable
+1. Run the development server through VS Code Command Line Interface
+```bash
+npm run dev
+```
+
+2. Open your local server via your web browser to see the result
+```bash
+ http://localhost:3000
+```
+
+
+## 🛠️ Technologies Used
+- TypeScript
+OpenCV (Computer Vision)
+MediaPipe (Hand Tracking)
+TensorFlow/Keras (Machine Learning Model)
+NumPy & Pandas (Data Handling)
+
+- TypeScript: for type-safe JavaScript development.
+- HTML: for structuring the web pages.
+- CSS: for global styling
+- Tailwind CSS: for utility-first CSS framework.
+- React: as the library for building user interfaces.
+- Drizzle ORM: for object-relational mapping.
+- SQL: for database management.
+
+
 
 ## Learn More
 
@@ -50,8 +84,4 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.

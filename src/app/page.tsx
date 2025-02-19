@@ -41,12 +41,12 @@ export default async function Home() {
               With the <strong>Plan</strong> feature, you can take control of your schedule! Select your preferred times and build your own timetable from scratch, or improve upon a generated one. It's perfect for fine-tuning your ideal week! Check it out at <a href="/plan">/plan</a>.
             </p>
 
-            <h3 className="pt-8">Compare</h3>
+            <h3 className="pt-8">Saved</h3>
             <p>
-              Have multiple timetables? The <strong>Compare</strong> feature allows you to compare different schedules to see which one works best for you. You can compare factors like days on campus, time between classes, and more to ensure you're making the best use of your time. Head over to <a href="/compare">/compare</a> to compare your saved timetables.
+              Have multiple timetables? The <strong>Saved</strong> feature allows you to oversee, rename, and delete different schedules to see which one works best for you. You can compare factors like days on campus, time between classes, and more to ensure you're making the best use of your time. Head over to <a href="/saved">/saved</a> to compare your saved timetables.
             </p>
 
-            <p>
+            <p className="mt-8">
               We’re here to help you organize your time efficiently! If you need any assistance or have questions, <a href="https://discord.gg/4wB924F2Fs">join our community on Discord</a> for support.
             </p>
         </div>

@@ -59,12 +59,6 @@ npm run dev
 
 
 ## 🛠️ Technologies Used
-- TypeScript
-OpenCV (Computer Vision)
-MediaPipe (Hand Tracking)
-TensorFlow/Keras (Machine Learning Model)
-NumPy & Pandas (Data Handling)
-
 - TypeScript: for type-safe JavaScript development.
 - HTML: for structuring the web pages.
 - CSS: for global styling
@@ -74,14 +68,33 @@ NumPy & Pandas (Data Handling)
 - SQL: for database management.
 
 
+## 🧪 Methodology
+API Data Pipeline
+- Get Course Data: Fetch QUT Course Data to identify activities for each unit and their timeslots
+- Get Teaching Periods: Fetch QUT Teaching Periods to identify when courses are offered
+
+Manage Data and Show Timetable
+- Allocate Timeslots: Extract one timeslot from each given activity that does not clash. Consider student needs when selecting timeslots
+- Output Timetable: Show a grid output of the given timeslots for the selected units
+
+
+## 🌟 If You Are Interested
+If you have the following skills or if you are simply looking to learn, here's how you can contribute:
+- Front End Developer: Focus on building user interfaces with React components and styling with CSS or Tailwind CSS. You can contribute by creating new UI elements, optimizing existing ones, and ensuring a responsive design.
+- Back End Developer: Work on server-side logic using NextJS server components. Help by setting up APIs, managing databases using Drizzle ORM and SQL, and ensuring efficient data processing.
+- Algorithm Designer: Develop and optimize algorithms for data manipulation, transformation, and retrieval. You can contribute by enhancing the efficiency of the data pipeline and implementing new features that improve performance.
+- UI/UX Designer: Design user interfaces that are both visually appealing and intuitive. Focus on improving the user experience by creating mockups, wireframes, and user flows to ensure a seamless interaction.
+- QA Tester: Run the project, identify any issues, and report them. Contribute by finding and fixing bugs, performing testing, and ensuring the overall quality of the project through thorough testing and debugging.
+Feel free to contribute and enhance this project!
+
 
 ## Learn More
 
-To learn more about Next.js, take a look at the following resources:
+To learn more about Next.js, Tailwind, and other technologies used in this project, take a look at the following resources:
 
 - [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
 - [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+- [Drizzle ORM Documentation](https://orm.drizzle.team/docs/get-started-mysql) - learn about DrizzleORM syntax
+- [TailwindCSS Components](https://tailwindcss.com/docs/installation/using-vite) - learn about TailwindCSS
 
 

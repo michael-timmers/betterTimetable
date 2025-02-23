@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import Timetable from "./showTimetable";
 import filterCourseList from "./allocationAlgorithm";
 
+
+// Structure the course data
 interface Course {
   id: string;
   unitCode: string;
@@ -21,8 +23,8 @@ interface CourseData {
   courses: Course[];
 }
 
-
 const SearchTimetable = () => {
+
   // Establish the variables that require updating
   const [unitCode, setUnitCode] = useState("");
   const [courseList, setCourseList] = useState<{ [key: string]: CourseData }>({});
@@ -30,7 +32,7 @@ const SearchTimetable = () => {
   const [selectedPeriod, setSelectedPeriod] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showTimetable, setShowTimetable] = useState(false);
+  const [tab, setTab] = useState<"units" | "preferences" | "timetable">("units");
   const [validPeriods, setValidPeriods] = useState([]); // Store valid teaching periods that returned data
   const [showDialog, setShowDialog] = useState(false); // Control the dialog box visibility
 
@@ -168,7 +170,10 @@ const SearchTimetable = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center p-12 text-white">
-      {!showTimetable ? (
+
+
+      {/* --------- UNITS TAB --------- */}
+      {tab === "units" && (
         <>
           <div className="mt-12 mb-4 w-full flex items-center relative">
             <h1 className="text-4xl absolute left-1/2 transform -translate-x-1/2">
@@ -179,7 +184,7 @@ const SearchTimetable = () => {
                 if (Object.keys(courseList).length === 0) {
                   setError("Add Unit to generate timetable");
                 } else {
-                  setShowTimetable(true);
+                  setTab("timetable");
                 }
               }}
               className={`ml-auto px-6 py-2 text-white rounded-full ${
@@ -287,11 +292,35 @@ const SearchTimetable = () => {
           )}
 
         </>
-      ) : (
+      )} 
+
+
+
+
+      {/* --------- PREFERENCES TAB --------- */}
+
+      {tab === "preferences" && (
+        <>
+          
+
+          {/* Display the course list in JSON format */}
+          <p> Preferences go here! </p>
+          
+
+        </> 
+      )}
+
+
+
+      
+      
+      {/* --------- TIMETABLE TAB --------- */}
+
+      {tab === "timetable" && (
         <>
           <div className="flex items-center w-full mb-4">
             <button
-              onClick={() => setShowTimetable(false)}
+              onClick={() => setTab("units")}
               className="px-6 py-2 bg-blue-1000 text-white hover:bg-blue-1100 rounded-full"
             >
               Back
@@ -310,6 +339,7 @@ const SearchTimetable = () => {
           </div>
         </>
       )}
+
     </div>
   );
 };

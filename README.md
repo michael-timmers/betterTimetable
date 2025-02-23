@@ -24,11 +24,39 @@ The BetterTimetable project, developed for Code Network using **NextJS (TypsScri
 - Delete previously saved timetables
   
 
-## 🚀 Installation
-1. Install GitHub Desktop
-   
-https://github.com/apps/desktop
+## 🚀 Install required software
+1. Install Git Bash
 
+Git Bash https://git-scm.com/downloads
+
+2. Install GitHub Desktop
+   
+https://desktop.github.com/?ref_cta=download+
+desktop&ref_loc=installing+github+desktop&ref_page=docs
+
+3. Install Visual Studio Code
+
+https://code.visualstudio.com/download
+
+4. Install mySQL Workbench
+
+https://dev.mysql.com/downloads/installer/
+
+Important Notes for MySQL Setup:
+- When it asks you for which version, select ‘Full’ version.
+- DO NOT modify network port during MySQL Setup. Ensure it is set to port 3306. If not, reinstall MySQL
+- YOU MUST create a root user with a password during installation. Do not lose these details! (But if you do then simply reinstall MySQL)
+
+
+5. Install Node
+
+https://nodejs.org/en/download
+
+
+
+## 🚀 Setup Project on VS Code (after installing software)
+1. Open GitHub Desktop App
+   
 2. Clone the repository
 ```bash
 git clone https://github.com/codenetwork/betterTimetable.git
@@ -42,6 +70,28 @@ npm install
 ```
 
 5. Duplicate `.env.example` to `.env` and update the `DATABASE_URL` to have your username, password, and port.
+
+
+## 🚀 Setup mySQL Database (after installing software)
+
+Part 1 – Create the Database Schema
+1. Open MySQL Command Line client by typing in ‘MySQL 8.0 Command Line Client’ to
+Windows Searchbar
+2. If you click to open the Command Line client, then you will need to insert the password
+you created earlier when setting up MySQL Workbench
+3. Type the following commands and press enter
+```bash
+CREATE USER 'BetterTimetable'@'localhost' IDENTIFIED BY
+'BetterTimetable1';
+GRANT ALL PRIVILEGES ON * . * TO 'BetterTimetable'@'localhost';
+FLUSH PRIVILEGES;
+CREATE DATABASE betterTimetable;
+```
+
+Part 2 – Populate the Database Schema
+1. Open the front-end repository with Visual Studio Code
+2. Run command “npm install” in the terminal
+
 
 
 ## 🖥️ Usage

@@ -31,6 +31,7 @@ module.exports = {
         "green-1000": "#3FC567",
         "purple-1000": "#7863FF",
         "pink-1000": "#F263FF",
+        "brown-1000": "#996633",
       },
     },
   },

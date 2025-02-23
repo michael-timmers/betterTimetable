@@ -29,6 +29,8 @@ Note - The output does need to be returned in the format shown underneath the pr
 
 
 
+
+
 // Define the structure for an individual course
 interface Course {
   id: string;
@@ -95,8 +97,30 @@ const convertTo24Hour = (time12h: string): string => {
   return `${hoursStr}:${minutesStr}:00`;
 };
 
+
+
+
+
+
+
+
+
 // Main function to filter the course list and build a conflict-free schedule
-const filterCourseList = (courseList: CourseList): FilteredCourseList | null => {
+export default function filterCourseList(
+  courseList: CourseList,
+  start: string,
+  end: string,
+  days: string[],
+  classesPerDay: number,
+  backToBack: boolean
+): FilteredCourseList | null {
+  // Print the input values
+  console.log(`Start Time: ${start}`);
+  console.log(`End Time: ${end}`);
+  console.log(`Days: ${days.join(", ")}`);
+  console.log(`Classes Per Day: ${classesPerDay}`);
+  console.log(`Back to Back Classes: ${backToBack}`);
+
   // Transform the course list into an array of units with their activities and courses
   const units = Object.entries(courseList).map(([unitCode, unitData]) => {
     // Group courses by activity type (e.g., group all lectures together)
@@ -159,7 +183,13 @@ const filterCourseList = (courseList: CourseList): FilteredCourseList | null => 
     console.warn("Unable to find a conflict-free schedule.");
     return null;
   }
-};
+}
+
+
+
+
+
+
 
 // Recursive function to schedule units and their activities
 const scheduleUnits = (
@@ -263,5 +293,3 @@ const scheduleUnits = (
   // Start scheduling activities for the current unit
   return scheduleActivities(0);
 };
-
-export default filterCourseList;

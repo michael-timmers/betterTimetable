@@ -1,10 +1,13 @@
-import SearchTimetable from "./showSearchBar";
+// Import the ManageTabs component from the current directory
+import ManageTabs from "./manageTabs";
 
+// Default export function for the Home page
 export default function Home() {
   return (
+    // Main container div with styling classes
     <div className="min-h-screen w-full items-center px-12 bg-gray-1000 text-white">
-      {/* Display the search functionality component */}
-      <SearchTimetable />
+      {/* Render the main application component */}
+      <ManageTabs />
     </div>
   );
 }

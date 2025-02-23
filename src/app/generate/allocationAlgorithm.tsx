@@ -78,22 +78,24 @@ interface FilteredCourseList {
 
 // Helper function to convert 12-hour time to 24-hour time format
 const convertTo24Hour = (time12h: string): string => {
-  // Split the time string into time and modifier (AM/PM)
-  const [time, modifier] = time12h.trim().split(/(am|pm)/i);
-  let [hours, minutes] = time.split(":").map(Number);
+  const match = time12h.trim().match(/^(\d{1,2}):(\d{2})(am|pm)$/i);
+  if (!match) {
+    throw new Error(`Invalid time format: ${time12h}`);
+  }
 
-  // Adjust hours based on AM/PM
+  let [, hourStr, minuteStr, modifier] = match;
+  let hours = parseInt(hourStr, 10);
+  const minutes = parseInt(minuteStr, 10);
+
   if (modifier.toLowerCase() === "pm" && hours !== 12) {
     hours += 12;
   } else if (modifier.toLowerCase() === "am" && hours === 12) {
     hours = 0;
   }
 
-  // Format hours and minutes with leading zeros
   const hoursStr = hours.toString().padStart(2, "0");
   const minutesStr = minutes.toString().padStart(2, "0");
 
-  // Return the time in HH:MM:SS format
   return `${hoursStr}:${minutesStr}:00`;
 };
 
@@ -143,7 +145,7 @@ export default function filterCourseList(
     };
   });
 
-  // Sort units by the total number of timeslot combinations (units with fewer options first)
+  // Alternative sorting: Schedule units with more options first
   units.sort((unitA, unitB) => {
     const optionsA = unitA.activities.reduce(
       (acc, activity) => acc * activity.courses.length,
@@ -153,8 +155,9 @@ export default function filterCourseList(
       (acc, activity) => acc * activity.courses.length,
       1
     );
-    return optionsA - optionsB;
+    return optionsB - optionsA; // Note the reversal here
   });
+
 
   // Initialize course times to keep track of scheduled times per day
   const scheduledTimesPerDay: CourseTimes = {
@@ -178,13 +181,14 @@ export default function filterCourseList(
 
   // Return the final schedule if successful, otherwise return null
   if (schedulingSuccess) {
+    console.log("Here is the final timetable.", finalSchedule);
+
     return finalSchedule;
   } else {
     console.warn("Unable to find a conflict-free schedule.");
     return null;
   }
 }
-
 
 
 
@@ -236,59 +240,56 @@ const scheduleUnits = (
         finalSchedule
       );
     }
-
-    // Get the current activity to schedule
+  
     const activity = currentUnit.activities[activityIndex];
-
+  
     // Try each course option for the current activity
     for (const course of activity.courses) {
-      // Convert the course's time to start and end Date objects
+      // Convert course times
       const [startTimeStr, endTimeStr] = course.time.split(" - ");
       const startTime = new Date(
         `1970-01-01T${convertTo24Hour(startTimeStr)}`
       );
       const endTime = new Date(`1970-01-01T${convertTo24Hour(endTimeStr)}`);
-
-      // Get the list of scheduled times on the course's day
+  
       const scheduledTimes = scheduledTimesPerDay[course.day];
-
-      // Check for time conflicts with already scheduled courses on that day
-      const hasConflict = scheduledTimes.some(
-        ({ start, end }) => startTime < end && endTime > start
-      );
-
+  
+      // Check for time conflicts
+      let hasConflict = false;
+      for (const scheduled of scheduledTimes) {
+        if (
+          (startTime < scheduled.end && endTime > scheduled.start)
+        ) {
+          hasConflict = true;
+          break;
+        }
+      }
+  
       if (!hasConflict) {
-        // No conflict; schedule the course by adding it to the final schedule
+        // No conflict; tentatively schedule the course
         finalSchedule[currentUnit.unitCode].courses.push(course);
-
-        // Add the course time to the scheduled times for that day
         scheduledTimes.push({
           start: startTime,
           end: endTime,
           unitCode: currentUnit.unitCode,
           activity: course.activity,
         });
-
-        // Sort the scheduled times by start time for accurate conflict detection
-        scheduledTimes.sort(
-          (scheduledA, scheduledB) =>
-            scheduledA.start.getTime() - scheduledB.start.getTime()
-        );
-
+  
         // Attempt to schedule the next activity
         if (scheduleActivities(activityIndex + 1)) {
           return true;
         }
-
-        // If scheduling the next activity fails, backtrack by removing the course
+  
+        // Backtracking: remove the tentatively scheduled course and time
         finalSchedule[currentUnit.unitCode].courses.pop();
         scheduledTimes.pop();
       }
     }
-
-    // If no course option works for the current activity, backtrack
+  
+    // Unable to schedule this activity without conflicts
     return false;
   };
+  
 
   // Start scheduling activities for the current unit
   return scheduleActivities(0);

@@ -50,67 +50,7 @@ const Preferences: React.FC<PreferencesProps> = ({
       <h2 className="text-3xl mb-4">Set Your Preferences</h2>
 
       {/* Preferences Form */}
-      {/* Replace the placeholder below with actual form elements */}
-      <div className="space-y-4">
-        {/* Start Time Input */}
-        <div>
-          <label className="block text-white">Start Time:</label>
-          <input
-            type="text"
-            value={start}
-            onChange={(e) => setStart(e.target.value)}
-            className="mt-1 px-3 py-2 rounded bg-gray-1200 text-white w-full"
-            placeholder="e.g., 9AM"
-          />
-        </div>
-
-        {/* End Time Input */}
-        <div>
-          <label className="block text-white">End Time:</label>
-          <input
-            type="text"
-            value={end}
-            onChange={(e) => setEnd(e.target.value)}
-            className="mt-1 px-3 py-2 rounded bg-gray-1200 text-white w-full"
-            placeholder="e.g., 5PM"
-          />
-        </div>
-
-        {/* Days Input */}
-        <div>
-          <label className="block text-white">Preferred Days (separated by commas):</label>
-          <input
-            type="text"
-            value={days}
-            onChange={(e) => setDays(e.target.value)}
-            className="mt-1 px-3 py-2 rounded bg-gray-1200 text-white w-full"
-            placeholder="e.g., MON, TUE, WED"
-          />
-        </div>
-
-        {/* Classes Per Day Input */}
-        <div>
-          <label className="block text-white">Classes Per Day:</label>
-          <input
-            type="number"
-            value={classesPerDay}
-            onChange={(e) => setClassesPerDay(Number(e.target.value))}
-            className="mt-1 px-3 py-2 rounded bg-gray-1200 text-white w-full"
-            min="1"
-          />
-        </div>
-
-        {/* Back-to-Back Classes Checkbox */}
-        <div className="flex items-center">
-          <input
-            type="checkbox"
-            checked={backToBack}
-            onChange={(e) => setBackToBack(e.target.checked)}
-            className="h-4 w-4 text-blue-1000 focus:ring-blue-500 border-gray-300 rounded"
-          />
-          <label className="ml-2 text-white">Prefer Back-to-Back Classes</label>
-        </div>
-      </div>
+      <p>Preferences go here!</p>
 
       {/* Navigation buttons */}
       <div className="mt-6 flex space-x-4">

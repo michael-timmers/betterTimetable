@@ -1,3 +1,4 @@
+![BetterTimetable](.github/assets/banner.png)
 
 # BetterTimetable
 

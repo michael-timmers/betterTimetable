@@ -40,7 +40,7 @@ export default function AuthTabs() {
 
     return (
         <div className="min-h-screen flex loginBackground justify-center items-center">
-            <div className="my-16 px-12 pt-8 pb-12 w-1/2 bg-gray-1000 rounded-xl relative z-10">
+            <div className="my-16 px-20 pt-8 pb-12 w-2/5 bg-gray-1000 rounded-xl relative z-10">
                 <div className="flex justify-center mb-10 border-b border-gray-300">
                     <button 
                         className={`py-2 px-6 ${activeTab === "login" ? "border-b-2 border-blue-1000 text-blue-1000" : "text-gray-300"}`} 

@@ -168,6 +168,26 @@ const SearchTimetable = () => {
 
   console.log("Entries!!", courseList);
 
+
+
+
+
+
+
+
+  // PREFERENCES --- TO DO!!
+
+  const start = "9AM";
+  const end = "5PM";
+  const days = ["MON", "TUE", "WED"];
+  const classesPerDay = 2;
+  const backToBack = false
+
+  // ------------------------
+
+
+
+
   return (
     <div className="min-h-screen flex flex-col items-center p-12 text-white">
 
@@ -184,7 +204,7 @@ const SearchTimetable = () => {
                 if (Object.keys(courseList).length === 0) {
                   setError("Add Unit to generate timetable");
                 } else {
-                  setTab("timetable");
+                  setTab("preferences");
                 }
               }}
               className={`ml-auto px-6 py-2 text-white rounded-full ${
@@ -194,7 +214,7 @@ const SearchTimetable = () => {
               }`}
               disabled={Object.keys(courseList).length === 0}
             >
-              NEXT
+              Next
             </button>
           </div>
 
@@ -305,8 +325,27 @@ const SearchTimetable = () => {
 
           {/* Display the course list in JSON format */}
           <p> Preferences go here! </p>
-          
 
+
+            <div className="inline">
+              <button
+                onClick={() => {
+                    setTab("units");
+                }}
+                className={`ml-auto px-6 py-2 text-white rounded-full bg-blue-1000 hover:bg-blue-1100`}
+              >
+                Back
+              </button>
+
+              <button
+                onClick={() => {
+                    setTab("timetable");
+                }}
+                className={`ml-auto px-6 py-2 text-white rounded-full bg-blue-1000 hover:bg-blue-1100`}
+              >
+                Next
+              </button>
+            </div>
         </> 
       )}
 
@@ -320,7 +359,7 @@ const SearchTimetable = () => {
         <>
           <div className="flex items-center w-full mb-4">
             <button
-              onClick={() => setTab("units")}
+              onClick={() => setTab("preferences")}
               className="px-6 py-2 bg-blue-1000 text-white hover:bg-blue-1100 rounded-full"
             >
               Back
@@ -330,7 +369,7 @@ const SearchTimetable = () => {
 
           <div className="border-b border-gray-500 w-full my-4"></div>
 
-          <Timetable courses={filterCourseList(courseList)} />
+          <Timetable courses={filterCourseList(courseList, start, end, days, classesPerDay, backToBack)} />
 
           {/* Display the course list in JSON format */}
           <div className="mt-6 w-full bg-gray-800 p-4 rounded-lg">

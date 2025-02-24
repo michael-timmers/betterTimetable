@@ -117,11 +117,11 @@ export default function filterCourseList(
   backToBack: boolean
 ): FilteredCourseList | null {
   // Print the input values
-  console.log(`Start Time: ${start}`);
-  console.log(`End Time: ${end}`);
-  console.log(`Days: ${days.join(", ")}`);
-  console.log(`Classes Per Day: ${classesPerDay}`);
-  console.log(`Back to Back Classes: ${backToBack}`);
+  // console.log(`Start Time: ${start}`);
+  // console.log(`End Time: ${end}`);
+  // console.log(`Days: ${days.join(", ")}`);
+  // console.log(`Classes Per Day: ${classesPerDay}`);
+  // console.log(`Back to Back Classes: ${backToBack}`);
 
   // Transform the course list into an array of units with their activities and courses
   const units = Object.entries(courseList).map(([unitCode, unitData]) => {

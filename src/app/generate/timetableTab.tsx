@@ -224,8 +224,8 @@ const Timetable: React.FC<TimetableProps> = ({ courses, unitColors }) => {
                   const { start, end } = parseTime(course.time);
                   const duration = end - start; // Duration in hours
 
-                  // Calculate height based on duration (1 hour = 8rem)
-                  const height = duration * 4; // Each half-hour slot is h-8 (2rem)
+                  // Calculate height based on duration (1 hour = 4rem)
+                  const height = duration * 4; // Each half-hour slot is h-4 (2rem)
 
                   // Width adjusts if multiple courses overlap at the same time
                   const width = 100 / arr.length;

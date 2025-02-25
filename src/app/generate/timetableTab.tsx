@@ -56,7 +56,7 @@ const TimetableView: React.FC<TimetableViewProps> = ({
     preferences.days,
     preferences.classesPerDay,
     preferences.backToBack
-  );
+  ) || {} ;
 
   return (
     <>

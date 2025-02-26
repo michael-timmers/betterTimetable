@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import filterCourseList from "./allocationAlgorithm";
+import filterCourseList from "./algorithm/coreAlgortithm";
 
 // Define interfaces and types for the components
 

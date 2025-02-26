@@ -26,6 +26,9 @@ Note - The output does need to be returned in the format shown underneath the pr
 
 */
 
+import { transformCourseList, sortUnitsByOptions, parseCourseTime } from "./helperFunctions";
+import { filterByStartTime, filterByEndTime, filterByDays, filterByClassesPerDay, filterByBackToBack } from "./preferences";
+
 
 /// ----------------------------------------------------------------------------------------------------- ///
 /// 
@@ -84,138 +87,6 @@ interface FilteredCourseList {
   };
 }
 
-
-
-
-
-
-/// ----------------------------------------------------------------------------------------------------- ///
-/// 
-///                                      HELPER FUNCTIONS
-///                  these are used to support the main functions of our algorithm
-///
-/// ----------------------------------------------------------------------------------------------------- ///
-
-
-function convertTo24Hour(time12h: string): string {
-    //// Helper function to convert 12-hour time to 24-hour time format
-    ///
-    /// inputs:
-    ///   time12h: string - A string representing the time in 12-hour format (e.g., "2:30pm")
-    /// outputs:
-    ///   string - The corresponding time in 24-hour format (e.g., "14:30:00")
-    ///
-
-    const match = time12h.trim().match(/^(\d{1,2}):(\d{2})(am|pm)$/i);
-    if (!match) {
-      throw new Error(`Invalid time format: ${time12h}`);
-    }
-
-    let [, hourStr, minuteStr, modifier] = match;
-    let hours = parseInt(hourStr, 10);
-    const minutes = parseInt(minuteStr, 10);
-
-    if (modifier.toLowerCase() === "pm" && hours !== 12) {
-      hours += 12;
-    } else if (modifier.toLowerCase() === "am" && hours === 12) {
-      hours = 0;
-    }
-
-    const hoursStr = hours.toString().padStart(2, "0");
-    const minutesStr = minutes.toString().padStart(2, "0");
-
-    return `${hoursStr}:${minutesStr}:00`;
-}
-
-
-
-
-function transformCourseList(courseList: Record<string, 
-  { unitName: string; 
-    courses: Course[] 
-  }>): Array<{ 
-    unitCode: string; 
-    unitName: string; 
-    activities: Array<{ 
-      activityType: string; 
-      courses: Course[] }> 
-  }> {
-  //// Function to transform the course list into an array of units with their activities and courses
-  ///
-  /// inputs:
-  ///   courseList: Record<string, { unitName: string; courses: Course[] }>
-  /// outputs:
-  ///   Array<{ unitCode: string; unitName: string; activities: Array<{ activityType: string; courses: Course[] }> }>
-  ///
-
-  return Object.entries(courseList).map(([unitCode, unitData]) => {
-    // Group courses by activity type (e.g., group all lectures together)
-    const activityGroups = unitData.courses.reduce((groups, course) => {
-      // Initialize the group if it doesn't exist, then add the course to it
-      (groups[course.activity] ||= []).push(course);
-      return groups;
-    }, {} as Record<string, Course[]>);
-
-    // Return the unit with its activities and corresponding courses
-    return {
-      unitCode,
-      unitName: unitData.unitName,
-      activities: Object.entries(activityGroups).map(
-        ([activityType, courses]) => ({
-          activityType,
-          courses,
-        })
-      ),
-    };
-  });
-}
-
-
-
-
-function sortUnitsByOptions(units: 
-  Array<{ 
-    unitCode: string; 
-    unitName: string; 
-    activities: Array<{ 
-      activityType: string; 
-      courses: Course[]
-    }> }>): void {
-  //// Function to sort units based on the number of scheduling options
-  ///
-  /// inputs:
-  ///   units: Array<{ unitCode: string; unitName: string; activities: Array<{ activityType: string; courses: Course[] }> }>
-  /// outputs:
-  ///   void - The input array is sorted in place
-  ///
-
-  units.sort((unitA, unitB) => {
-    const optionsA = unitA.activities.reduce(
-      (acc, activity) => acc * activity.courses.length,
-      1
-    );
-    const optionsB = unitB.activities.reduce(
-      (acc, activity) => acc * activity.courses.length,
-      1
-    );
-    return optionsB - optionsA; // Note the reversal here
-  });
-}
-
-
-
-
-function parseCourseTime(timeStr: string): Date {
-  //// Function to parse course time strings into Date objects
-  ///
-  /// inputs:
-  ///   timeStr: string - A string representing the time in 12-hour format (e.g., "2:30pm")
-  /// outputs:
-  ///   Date - A Date object corresponding to the time on a fixed date (e.g., January 1, 1970)
-  ///
-
-  return new Date(`1970-01-01T${convertTo24Hour(timeStr)}`);
-}
 
 
 
@@ -552,89 +423,6 @@ function unscheduleCourse(
 ///                  these are used to directly run the filtering algorithm
 ///
 /// ----------------------------------------------------------------------------------------------------- ///
-
-
-function filterByStartTime(courseList: CourseList, start: string): FilteredCourseList {
-  //// Function to filter courses based on start time preference
-  ///
-  /// inputs:
-  ///   courseList: CourseList - The list of courses to filter
-  ///   start: string - The preferred earliest start time (e.g., "9:00am")
-  /// outputs:
-  ///   FilteredCourseList - The filtered list of courses
-  ///
-
-  return courseList;
-}
-
-
-function filterByEndTime(courseList: CourseList, end: string): FilteredCourseList {
-
-    
-  //// Function to filter courses based on end time preference
-  ///
-  /// inputs:
-  ///   courseList: CourseList - The list of courses to filter
-  ///   end: string - The preferred latest end time (e.g., "5:00pm")
-  /// outputs:
-  ///   FilteredCourseList - The filtered list of courses
-  ///
-
-  return courseList;
-}
-
-
-function filterByDays(courseList: CourseList, days: string[]): FilteredCourseList {
-  //// Function to filter courses based on preferred days
-  ///
-  /// inputs:
-  ///   courseList: CourseList - The list of courses to filter
-  ///   days: string[] - An array of preferred days (e.g., ["MON", "WED"])
-  /// outputs:
-  ///   FilteredCourseList - The filtered list of courses
-  ///
-
-  // Implement filtering logic here
-
-  return courseList;
-}
-
-
-
-function filterByClassesPerDay(courseList: CourseList, classesPerDay: number): FilteredCourseList {
-  //// Function to filter courses based on the maximum number of classes per day
-  ///
-  /// inputs:
-  ///   courseList: CourseList - The list of courses to filter
-  ///   classesPerDay: number - The maximum number of classes allowed per day
-  /// outputs:
-  ///   FilteredCourseList - The filtered list of courses
-  ///
-
-  // Implement filtering logic here
-
-  return courseList;
-}
-
-
-function filterByBackToBack(courseList: CourseList, backToBack: boolean): FilteredCourseList {
-  //// Function to filter courses based on back-to-back preference
-  ///
-  /// inputs:
-  ///   courseList: CourseList - The list of courses to filter
-  ///   backToBack: boolean - Preference for back-to-back classes
-  /// outputs:
-  ///   FilteredCourseList - The filtered list of courses
-  ///
-
-
-
-  // Implement filtering logic here
-
-  return courseList;
-}
-
-
 
 
 export default function filterCourseList(

@@ -48,6 +48,8 @@ const TimetableView: React.FC<TimetableViewProps> = ({
   preferences,
   setTab,
 }) => {
+
+
   // Filter the course list based on user preferences to generate a conflict-free timetable
   const timetableData = filterCourseList(
     courseList,
@@ -57,6 +59,8 @@ const TimetableView: React.FC<TimetableViewProps> = ({
     preferences.classesPerDay,
     preferences.backToBack
   );
+
+  console.log("timetableData", timetableData);
 
   return (
     <>

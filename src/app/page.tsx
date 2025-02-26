@@ -18,8 +18,8 @@ export default async function Home() {
     return (
       <div className="min-h-screen flex">
         {/* Left Sidebar */}
-        <div className="w-1/4 bg-gray-1100 px-8 py-6 text-white">
-          <a className="text-xl font-semibold">Home Page</a>
+        <div className="w-1/4 bg-gray-1100 px-8 py-6">
+          <a className="text-xl font-semibold text-white">Home Page</a>
         </div>
 
         {/* Main Content */}

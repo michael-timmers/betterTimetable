@@ -1,4 +1,4 @@
-// This file is crucial for formatting the prisma schema
+// This file is crucial for formatting the drizzle schema
 
 import { mysqlTable, mysqlSchema, varchar, boolean, text, int, timestamp, primaryKey } from "drizzle-orm/mysql-core";
 import { sql } from "drizzle-orm";

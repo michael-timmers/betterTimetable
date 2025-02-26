@@ -102,7 +102,7 @@ const Preferences: React.FC<PreferencesProps> = ({
                   key={`${day}-${time}`}
                   className={`p-2 cursor-pointer ${
                     studyTimes[day]?.includes(time)
-                      ? "bg-indigo-600" // Highlight selected time slots
+                      ? "bg-blue-1000" // Highlight selected time slots
                       : "bg-gray-700 hover:bg-gray-600" // Default and hover styles
                   }`}
                   onClick={() => handleTimeSelection(day, time)}

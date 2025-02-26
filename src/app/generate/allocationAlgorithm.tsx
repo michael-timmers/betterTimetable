@@ -554,6 +554,88 @@ function unscheduleCourse(
 /// ----------------------------------------------------------------------------------------------------- ///
 
 
+function filterByStartTime(courseList: CourseList, start: string): FilteredCourseList {
+  //// Function to filter courses based on start time preference
+  ///
+  /// inputs:
+  ///   courseList: CourseList - The list of courses to filter
+  ///   start: string - The preferred earliest start time (e.g., "9:00am")
+  /// outputs:
+  ///   FilteredCourseList - The filtered list of courses
+  ///
+
+  return courseList;
+}
+
+
+function filterByEndTime(courseList: CourseList, end: string): FilteredCourseList {
+
+    
+  //// Function to filter courses based on end time preference
+  ///
+  /// inputs:
+  ///   courseList: CourseList - The list of courses to filter
+  ///   end: string - The preferred latest end time (e.g., "5:00pm")
+  /// outputs:
+  ///   FilteredCourseList - The filtered list of courses
+  ///
+
+  return courseList;
+}
+
+
+function filterByDays(courseList: CourseList, days: string[]): FilteredCourseList {
+  //// Function to filter courses based on preferred days
+  ///
+  /// inputs:
+  ///   courseList: CourseList - The list of courses to filter
+  ///   days: string[] - An array of preferred days (e.g., ["MON", "WED"])
+  /// outputs:
+  ///   FilteredCourseList - The filtered list of courses
+  ///
+
+  // Implement filtering logic here
+
+  return courseList;
+}
+
+
+
+function filterByClassesPerDay(courseList: CourseList, classesPerDay: number): FilteredCourseList {
+  //// Function to filter courses based on the maximum number of classes per day
+  ///
+  /// inputs:
+  ///   courseList: CourseList - The list of courses to filter
+  ///   classesPerDay: number - The maximum number of classes allowed per day
+  /// outputs:
+  ///   FilteredCourseList - The filtered list of courses
+  ///
+
+  // Implement filtering logic here
+
+  return courseList;
+}
+
+
+function filterByBackToBack(courseList: CourseList, backToBack: boolean): FilteredCourseList {
+  //// Function to filter courses based on back-to-back preference
+  ///
+  /// inputs:
+  ///   courseList: CourseList - The list of courses to filter
+  ///   backToBack: boolean - Preference for back-to-back classes
+  /// outputs:
+  ///   FilteredCourseList - The filtered list of courses
+  ///
+
+
+
+  // Implement filtering logic here
+
+  return courseList;
+}
+
+
+
 
 export default function filterCourseList(
       courseList: CourseList,
@@ -573,7 +655,21 @@ export default function filterCourseList(
       ///   filteredCourseList - A dictionary element with the same structure as courseList but containing only filtered elements
       ///
 
+      // Filter by start time
+      courseList = filterByStartTime(courseList, start);
     
+      // Filter by end time
+      courseList = filterByEndTime(courseList, end);
+    
+      // Filter by days
+      courseList = filterByDays(courseList, days);
+    
+      // Filter by classes per day (placeholder)
+      courseList = filterByClassesPerDay(courseList, classesPerDay);
+    
+      // Filter by back-to-back preference (placeholder)
+      courseList = filterByBackToBack(courseList, backToBack);
+
       // Transform the course list using the transformCourseList function
       const units = transformCourseList(courseList);
 

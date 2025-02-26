@@ -27,8 +27,8 @@ Note - The output does need to be returned in the format shown underneath the pr
 */
 
 import { transformCourseList, sortUnitsByOptions } from "./helperFunctions";
-import { filterByStartTime, filterByEndTime, filterByDays, filterByClassesPerDay, filterByBackToBack } from "./preferences";
-import scheduleUnits from "./recursiveAlgorithm";
+import { filterByStartTime, filterByEndTime, filterByDays, filterByClassesPerDay, filterByBackToBack } from "./preferenceFunctions";
+import scheduleUnits from "./recursiveFunctions";
 
 
 /// ----------------------------------------------------------------------------------------------------- ///

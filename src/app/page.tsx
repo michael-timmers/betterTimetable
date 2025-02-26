@@ -16,10 +16,10 @@ export default async function Home() {
     // console.log("Here is the courseList: ", courseList);
 
     return (
-      <div className="min-h-screen flex">
+      <div className="min-h-screen flex text-white">
         {/* Left Sidebar */}
         <div className="w-1/4 bg-gray-1100 px-8 py-6">
-          <a className="text-xl font-semibold text-white">Home Page</a>
+          <a className="text-xl font-semibold">Home Page</a>
         </div>
 
         {/* Main Content */}

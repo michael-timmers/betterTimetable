@@ -31,7 +31,7 @@ export default function Navbar({ user }) {
   };
 
   return (
-    <div className="navbar">
+    <div className="navbar bg-gray-900 text-white">
       <div className="navbar-start">
         <div className="dropdown">
           <div

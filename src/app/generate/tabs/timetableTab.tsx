@@ -58,7 +58,7 @@ const TimetableView: React.FC<TimetableViewProps> = ({
     preferences.days,
     preferences.classesPerDay,
     preferences.backToBack
-  );
+  ) || {} ;
 
   console.log("timetableData", timetableData);
 
@@ -85,7 +85,7 @@ const TimetableView: React.FC<TimetableViewProps> = ({
       <Timetable courses={timetableData} unitColors={unitColors} />
 
       {/* Display the course list in JSON format for debugging or informational purposes */}
-      <div className="mt-6 w-full bg-gray-800 p-4 rounded-lg">
+      <div className="mt-6 w-full bg-gray-900 p-4 rounded-lg">
         <h2 className="text-xl mb-2">Updated Course List (JSON Format):</h2>
         <pre className="text-sm text-gray-300">
           {JSON.stringify(courseList, null, 2)}
@@ -202,7 +202,7 @@ const Timetable: React.FC<TimetableProps> = ({ courses, unitColors }) => {
           {timeSlots.map((time) => (
             <div
               key={time}
-              className="relative h-8 border-b border-gray-700 bg-gray-900"
+              className="relative h-8 border-b border-gray-900 bg-gray-900"
             >
               {/* Display time labels only on the hour */}
               {Number.isInteger(time) && (

@@ -31,10 +31,12 @@ interface PreferencesData {
   days: string[];       // Preferred days of the week (e.g., ["MON", "TUE", "WED"])
   classesPerDay: number;// Maximum number of classes per day
   backToBack: boolean;  // Preference for back-to-back classes
+  studyTimes: { [key: string]: string[] }; // Study times for each day
 }
 
 // Main component that manages the application tabs and state
 export default function ManageTabs() {
+
   // State to store the list of courses added by the user
   const [courseList, setCourseList] = useState<{ [key: string]: CourseData }>({});
 
@@ -45,6 +47,7 @@ export default function ManageTabs() {
     days: ["MON", "TUE", "WED"],
     classesPerDay: 2,
     backToBack: false,
+    studyTimes: {},  // Initially empty
   });
 
   // State to manage the currently active tab ("units", "preferences", or "timetable")
@@ -100,7 +103,7 @@ export default function ManageTabs() {
       {/* Render the Preferences component when on the "preferences" tab */}
       {tab === "preferences" && (
         <Preferences
-          preferences={preferences}
+          preferences={preferences}      // Pass the entire preferences object
           setPreferences={setPreferences}
           setTab={setTab}
         />
@@ -110,7 +113,7 @@ export default function ManageTabs() {
       {tab === "timetable" && (
         <TimetableView
           courseList={courseList}
-          preferences={preferences}
+          preferences={preferences}     // Pass the entire preferences object
           setTab={setTab}
           unitColors={unitColors}
         />

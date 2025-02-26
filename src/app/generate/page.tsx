@@ -1,5 +1,5 @@
 // Import the ManageTabs component from the current directory
-import ManageTabs from "./tabs/manageTabs";
+import ManageTabs from "./tabs/manageAllTabs";
 
 // Default export function for the Home page
 export default function Home() {

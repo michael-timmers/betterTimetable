@@ -2,43 +2,7 @@
 
 import React, { useState } from "react";
 import filterCourseList from "../algorithms/coreAlgorithm";
-
-// Define interfaces and types for the components
-
-// Represents an individual course session
-interface Course {
-  id: string;            // Unique identifier for the course session
-  unitCode: string;      // Code of the unit/course (e.g., "CAB202")
-  unitName: string;      // Full name of the unit/course
-  classType: string;     // Type of class (e.g., "Lecture", "Tutorial")
-  activity: string;      // Specific activity (e.g., "LEC", "TUT")
-  day: string;           // Day of the week (e.g., "MON", "TUE")
-  time: string;          // Time slot (e.g., "9AM - 11AM")
-  room: string;          // Room or location of the class
-  teachingStaff: string; // Instructor or teaching staff name
-}
-
-// Contains data for a unit, including its name and associated courses
-interface CourseData {
-  unitName: string; // Full name of the unit/course
-  courses: Course[]; // Array of course sessions under this unit
-}
-
-// Define the structure for user preferences data
-interface PreferencesData {
-  studyTimes: { [key: string]: string[] }; // Selected study times for each day
-}
-
-// Props for the TimetableView component
-interface TimetableViewProps {
-  courseList: { [key: string]: CourseData }; // List of units and their courses
-  unitColors: { [unitCode: string]: string }; // Mapping of unit codes to their assigned colors
-  preferences: PreferencesData;              // User's preferences for the timetable
-  setTab: React.Dispatch<React.SetStateAction<"units" | "preferences" | "timetable">>; // Function to navigate between tabs
-}
-
-
-
+import { Course, TimetableViewProps } from "../algorithms/interfaces";
 
 // TimetableView Component: Generates and displays the timetable based on courses and preferences
 const TimetableView: React.FC<TimetableViewProps> = ({

@@ -76,6 +76,15 @@
 /// ----------------------------------------------------------------------------------------------------- ///
 
 
+// Props for the TimetableView component
+export interface TimetableViewProps {
+  courseList: { [key: string]: UnitData }; // List of units and their courses
+  unitColors: { [unitCode: string]: string }; // Mapping of unit codes to their assigned colors
+  preferences: PreferencesData;              // User's preferences
+  setPreferences: React.Dispatch<React.SetStateAction<PreferencesData>>; // Function to update preferences
+  setTab: React.Dispatch<React.SetStateAction<"units" | "preferences" | "timetable">>; // Function to navigate between tabs
+}
+
 /**
  * Interface representing an individual course session (e.g., a lecture or tutorial).
  * This structure holds all the details necessary to identify and schedule the course.
@@ -92,7 +101,6 @@ export interface Course {
     teachingStaff: string; // Name(s) of the instructor(s) or teaching staff
 }
 
-
 // Define the course list as a mapping from unit codes to unit data
 export interface CourseList {
     [unitCode: string]: UnitData;
@@ -104,10 +112,9 @@ export interface UnitData {
     courses: Course[]; // List of courses under this unit
 }
   
-// Define the structure for user preferences
+// Define the structure for user preferences data
 export interface PreferencesData {
-    studyTimes: { [key: string]: string[] }; // Maps days to arrays of preferred time slots
-    // Add any additional preference properties here
+  studyTimes: { [key: string]: string[] }; // Selected study times for each day
   }
   
 

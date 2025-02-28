@@ -2,6 +2,10 @@
 
 import React, { useState, useEffect } from "react";
 
+// Define the structure for user preferences data
+interface PreferencesData {
+  studyTimes: { [key: string]: string[] }; // Selected study times for each day
+}
 
 // Define the props for the Preferences component
 interface PreferencesProps {

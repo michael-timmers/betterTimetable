@@ -31,20 +31,6 @@ import scheduleUnits from "./recursiveFunctions";
 import { CourseList, CourseTimes, FilteredCourseList, UnitDomain } from "./interfaces";
 
 
-/// ----------------------------------------------------------------------------------------------------- ///
-/// 
-///                                      INTERFACES
-///             these are used to provide structure to our data for type safety
-///
-/// ----------------------------------------------------------------------------------------------------- ///
-
-
-
-
-
-
-
-
 
 /// ----------------------------------------------------------------------------------------------------- ///
 /// 

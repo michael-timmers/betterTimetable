@@ -57,14 +57,12 @@ interface FilteredCourseList {
     
 /// ----------------------------------------------------------------------------------------------------- ///
 /// 
-///                                      PREFERENCE FUNCTIONS
-///          these are used to support our personal needs as students for the filtering algorithm
+///                              STAGE 1 - FILTER BY UNAVAILABLE TIMES
+///                       will remove all timeslots outside of available times
 ///
 /// ----------------------------------------------------------------------------------------------------- ///
 
-
-
-export function filterByPreference(
+export function filterByUnavailability(
   courseList: CourseList,
   studyTimes: { [key: string]: string[] }
 ): FilteredCourseList {
@@ -87,9 +85,103 @@ export function filterByPreference(
 
 
   
+/// ----------------------------------------------------------------------------------------------------- ///
+/// 
+///                              STAGE 2 - GROUP ACTIVITIES BY UNIT
+///                       will group timeslots by activity for each unit
+///
+/// ----------------------------------------------------------------------------------------------------- ///
+
+export function groupActivitiesByUnit(courseList: Record<string, 
+  { unitName: string; 
+    courses: Course[] 
+  }>): Array<{ 
+    unitCode: string; 
+    unitName: string; 
+    activities: Array<{ 
+      activityType: string; 
+      courses: Course[] }> 
+  }> {
+  //// Function to transform the course list into an array of units with their activities and courses
+  ///
+  /// inputs:
+  ///   courseList: Record<string, { unitName: string; courses: Course[] }>
+  /// outputs:
+  ///   Array<{ unitCode: string; unitName: string; activities: Array<{ activityType: string; courses: Course[] }> }>
+  ///
+
+  return Object.entries(courseList).map(([unitCode, unitData]) => {
+    // Group courses by activity type (e.g., group all lectures together)
+    const activityGroups = unitData.courses.reduce((groups, course) => {
+      // Initialize the group if it doesn't exist, then add the course to it
+      (groups[course.activity] ||= []).push(course);
+      return groups;
+    }, {} as Record<string, Course[]>);
+
+    // Return the unit with its activities and corresponding courses
+    return {
+      unitCode,
+      unitName: unitData.unitName,
+      activities: Object.entries(activityGroups).map(
+        ([activityType, courses]) => ({
+          activityType,
+          courses,
+        })
+      ),
+    };
+  });
+}
+
+
+
+
+
+/// ----------------------------------------------------------------------------------------------------- ///
+/// 
+///                              STAGE 3 - INITIALISE SCHEDULE DATA STRUCTYRES
+///                 will initialise data structured for each day of the week along with a 
+//                                 new dictionary for the final schedule
+///
+/// ----------------------------------------------------------------------------------------------------- ///
+
+export function initializeScheduleData(): { 
+  scheduledTimesPerDay: CourseTimes; 
+  finalSchedule: FilteredCourseList } {
+  ///
+  /// Inputs:
+  ///   None
+  /// Outputs:
+  ///   An object containing:
+  ///     - scheduledTimesPerDay: A record of arrays representing scheduled times for each weekday.
+  ///     - finalSchedule: An object to store the final schedule.
+  ///
+
+  return {
+    scheduledTimesPerDay: {
+      MON: [],
+      TUE: [],
+      WED: [],
+      THU: [],
+      FRI: [],
+    },
+    finalSchedule: {},
+  };
+}
+
+
+
+
+
+
+
+
+
+
+
+
   /// ----------------------------------------------------------------------------------------------------- ///
   /// 
-  ///                                      HELPER FUNCTIONS
+  ///                                     OTHER HELPER FUNCTIONS
   ///                  these are used to support the main functions of our algorithm
   ///
   /// ----------------------------------------------------------------------------------------------------- ///
@@ -124,85 +216,6 @@ export function filterByPreference(
   
       return `${hoursStr}:${minutesStr}:00`;
   }
-  
-  
-  
-  
- export function groupActivitiesWithinUnits(courseList: Record<string, 
-    { unitName: string; 
-      courses: Course[] 
-    }>): Array<{ 
-      unitCode: string; 
-      unitName: string; 
-      activities: Array<{ 
-        activityType: string; 
-        courses: Course[] }> 
-    }> {
-    //// Function to transform the course list into an array of units with their activities and courses
-    ///
-    /// inputs:
-    ///   courseList: Record<string, { unitName: string; courses: Course[] }>
-    /// outputs:
-    ///   Array<{ unitCode: string; unitName: string; activities: Array<{ activityType: string; courses: Course[] }> }>
-    ///
-  
-    return Object.entries(courseList).map(([unitCode, unitData]) => {
-      // Group courses by activity type (e.g., group all lectures together)
-      const activityGroups = unitData.courses.reduce((groups, course) => {
-        // Initialize the group if it doesn't exist, then add the course to it
-        (groups[course.activity] ||= []).push(course);
-        return groups;
-      }, {} as Record<string, Course[]>);
-  
-      // Return the unit with its activities and corresponding courses
-      return {
-        unitCode,
-        unitName: unitData.unitName,
-        activities: Object.entries(activityGroups).map(
-          ([activityType, courses]) => ({
-            activityType,
-            courses,
-          })
-        ),
-      };
-    });
-  }
-
-
-
-
-  export function initializeScheduleData(): { 
-    scheduledTimesPerDay: CourseTimes; 
-    finalSchedule: FilteredCourseList } {
-  ///
-  /// Inputs:
-  ///   None
-  /// Outputs:
-  ///   An object containing:
-  ///     - scheduledTimesPerDay: A record of arrays representing scheduled times for each weekday.
-  ///     - finalSchedule: An object to store the final schedule.
-  ///
-
-    return {
-      scheduledTimesPerDay: {
-        MON: [],
-        TUE: [],
-        WED: [],
-        THU: [],
-        FRI: [],
-      },
-      finalSchedule: {},
-    };
-  }
-
-  
-
-
-
-  
-  
-  
-  
   
   export function parseCourseTime(timeStr: string): Date {
     //// Function to parse course time strings into Date objects

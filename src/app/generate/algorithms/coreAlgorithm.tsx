@@ -26,7 +26,7 @@ Note - The output does need to be returned in the format shown underneath the pr
 
 */
 
-import { filterByPreference, groupActivitiesWithinUnits, initializeScheduleData } from "./helperFunctions";
+import { filterByUnavailability, groupActivitiesByUnit, initializeScheduleData } from "./helperFunctions";
 import scheduleUnits from "./recursiveFunctions";
 
 
@@ -85,52 +85,51 @@ interface FilteredCourseList {
 /// ----------------------------------------------------------------------------------------------------- ///
 
 
-export default function filterCourseList(
-      courseList: CourseList,
-      studyTimes: { [key: string]: string[] },
-    ): FilteredCourseList | null {
-      ///
-      /// This function takes in the list of selected courses as well as preferences and outputs a filtered list of
-      /// the given courses but only with a single timeslot for each activity selected based on preferences 
-      ///
-      /// inputs:
-      ///   courseList - A dictionary element containing the added unit codes and their timeslots
-      /// outputs:
-      ///   filteredCourseList - A dictionary element with the same structure as courseList but containing only filtered elements
-      ///
+export default function generateSchedule(
+  courseList: CourseList,
+  unavailableTimes: { [day: string]: string[] },
+): FilteredCourseList | null {
+  ///
+  /// This function generates a schedule based on selected courses and user availability.
+  /// It returns a filtered list containing one timeslot per activity for each course,
+  /// ensuring that selected times do not conflict with user unavailability.
+  ///
+  /// Inputs:
+  ///   courseList - A mapping of unit codes to their corresponding course details and timeslots.
+  ///   unavailableTimes - A mapping of days to arrays of times when the user is unavailable.
+  /// Output:
+  ///   filteredCourseList - A mapping similar to courseList but containing only the selected timeslots.
+  ///
 
-      console.log("Here is the study times we are not available for:", studyTimes);
+  console.log("User unavailable times:", unavailableTimes);
 
-      // STAGE 1 --- CONSIDER PREFERENCE
-      courseList = filterByPreference(courseList, studyTimes); 
+  // STAGE 1 --- APPLY UNAVAILABILITY FILTER
+  const availableCourses = filterByUnavailability(courseList, unavailableTimes);
 
-      
-      // STAGE 2 --- GROUP ACTIVITIES WITHIN COURSES
-      const units = groupActivitiesWithinUnits(courseList); 
+  // STAGE 2 --- GROUP ACTIVITIES WITHIN UNITS
+  const groupedUnits = groupActivitiesByUnit(availableCourses);
 
+  // STAGE 3 --- INITIALIZE SCHEDULE DATA STRUCTURES
+  const { scheduledTimesPerDay, finalSchedule } = initializeScheduleData();
 
-      // STAGE 3 --- INITIALISE COURSE TIMES AND FINAL SCHEDULE DATA STRUCTURES
-      const { scheduledTimesPerDay, finalSchedule } = initializeScheduleData();;
-    
+  // STAGE 4 --- RECURSIVELY SCHEDULE UNITS
+  const startingUnitIndex = 0;
+  const schedulingSuccess = scheduleUnits(
+    startingUnitIndex,
+    groupedUnits,
+    scheduledTimesPerDay,
+    finalSchedule
+  );
 
-      // STAGE 4 --- SCHEDULE UNITS RECURSIVELY
-      const schedulingSuccess = scheduleUnits(
-        0,
-        units,
-        scheduledTimesPerDay,
-        finalSchedule
-      );
-
-      // Return the final schedule if successful, otherwise return null
-      if (schedulingSuccess) {
-        // console.log("Here is the final timetable.", finalSchedule);
-
-        return finalSchedule;
-      } else {
-        // console.warn("Unable to find a conflict-free schedule.");
-        return null;
-      }
+  // STAGE 5 --- RETURN FINAL SCHEDULE
+  if (schedulingSuccess) {
+    // console.log("Final timetable generated:", finalSchedule);
+    return finalSchedule;
+  } else {
+    // console.warn("Unable to create a conflict-free schedule.");
+    return null;
   }
+}
 
 
 

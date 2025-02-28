@@ -26,11 +26,6 @@ interface CourseData {
 
 // Define the structure for user preferences
 interface PreferencesData {
-  start: string;        // Preferred start time (e.g., "9AM")
-  end: string;          // Preferred end time (e.g., "5PM")
-  days: string[];       // Preferred days of the week (e.g., ["MON", "TUE", "WED"])
-  classesPerDay: number;// Maximum number of classes per day
-  backToBack: boolean;  // Preference for back-to-back classes
   studyTimes: { [key: string]: string[] }; // Study times for each day
 }
 
@@ -42,11 +37,6 @@ export default function ManageTabs() {
 
   // State to store user preferences
   const [preferences, setPreferences] = useState<PreferencesData>({
-    start: "9AM",
-    end: "5PM",
-    days: ["MON", "TUE", "WED"],
-    classesPerDay: 2,
-    backToBack: false,
     studyTimes: {},  // Initially empty
   });
 

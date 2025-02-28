@@ -26,11 +26,7 @@ interface CourseData {
 
 // User's preferences for timetable customization
 interface PreferencesData {
-  start: string;          // Preferred earliest class time (e.g., "9AM")
-  end: string;            // Preferred latest class end time (e.g., "5PM")
-  days: string[];         // Preferred days of the week (e.g., ["MON", "TUE"])
-  classesPerDay: number;  // Maximum number of classes per day
-  backToBack: boolean;    // Preference for having back-to-back classes
+  studyTimes: string[];
 }
 
 // Props for the TimetableView component
@@ -51,16 +47,9 @@ const TimetableView: React.FC<TimetableViewProps> = ({
 
 
   // Filter the course list based on user preferences to generate a conflict-free timetable
-  const timetableData = filterCourseList(
-    courseList,
-    preferences.start,
-    preferences.end,
-    preferences.days,
-    preferences.classesPerDay,
-    preferences.backToBack
-  ) || {} ;
+  const timetableData = filterCourseList(courseList, preferences.studyTimes) || {};
 
-  // console.log("timetableData", timetableData);
+  // console.log("here are the study times: ", preferences.studyTimes);
 
   return (
     <>

@@ -87,11 +87,7 @@ interface FilteredCourseList {
 
 export default function filterCourseList(
       courseList: CourseList,
-      start: string,
-      end: string,
-      days: string[],
-      classesPerDay: number,
-      backToBack: boolean
+      studyTimes: { [key: string]: string[] },
     ): FilteredCourseList | null {
       ///
       /// This function takes in the list of selected courses as well as preferences and outputs a filtered list of
@@ -103,9 +99,10 @@ export default function filterCourseList(
       ///   filteredCourseList - A dictionary element with the same structure as courseList but containing only filtered elements
       ///
 
+      console.log("Here is the study times we are not available for:", studyTimes);
 
       // STAGE 1 --- CONSIDER PREFERENCE
-      courseList = filterByPreference(courseList, start); 
+      courseList = filterByPreference(courseList, studyTimes); 
 
       
       // STAGE 2 --- GROUP ACTIVITIES WITHIN COURSES
@@ -114,10 +111,9 @@ export default function filterCourseList(
 
       // STAGE 3 --- INITIALISE COURSE TIMES AND FINAL SCHEDULE DATA STRUCTURES
       const { scheduledTimesPerDay, finalSchedule } = initializeScheduleData();;
+    
 
-
-
-      // Start scheduling units recursively
+      // STAGE 4 --- SCHEDULE UNITS RECURSIVELY
       const schedulingSuccess = scheduleUnits(
         0,
         units,

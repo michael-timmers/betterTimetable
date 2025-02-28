@@ -7,17 +7,8 @@
 
 
 
+
 // Define an interface for course times
-interface CourseTimes {
-  MON: any[];
-  TUE: any[];
-  WED: any[];
-  THU: any[];
-  FRI: any[];
-}
-
-
-// Define the structure for tracking scheduled times per day
 interface CourseTimes {
   [day: string]: ScheduledTime[]; // e.g., MON: [{...}, {...}]
 }
@@ -29,7 +20,6 @@ interface ScheduledTime {
   unitCode: string;
   activity: string;
 }
-
 
 // Define the structure for an individual course
 interface Course {
@@ -64,7 +54,6 @@ interface FilteredCourseList {
 }
 
 
-
     
 /// ----------------------------------------------------------------------------------------------------- ///
 /// 
@@ -75,16 +64,22 @@ interface FilteredCourseList {
 
 
 
-export function filterByPreference(courseList: CourseList, start: string): FilteredCourseList {
-  //// Function to filter courses based on start time preference
+export function filterByPreference(
+  courseList: CourseList,
+  studyTimes: { [key: string]: string[] }
+): FilteredCourseList {
+  ///
+  /// Function to filter courses based on preferred study times.
   ///
   /// inputs:
-  ///   courseList: CourseList - The list of courses to filter
-  ///   start: string - The preferred earliest start time (e.g., "9:00am")
+  ///   courseList - The list of courses to filter.
+  ///   studyTimes - A dictionary mapping days to preferred study times.
   /// outputs:
-  ///   FilteredCourseList - The filtered list of courses
+  ///   FilteredCourseList - The filtered list of courses based on study times.
   ///
 
+  // Implement filtering logic based on studyTimes
+  // Placeholder: Return the courseList unchanged for now
   return courseList;
 }
 

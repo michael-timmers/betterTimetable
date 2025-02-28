@@ -4,19 +4,14 @@ import React, { useState, useEffect } from "react";
 
 // Define the structure for user preferences data
 interface PreferencesData {
-  start: string; // Preferred start time (e.g., "9AM")
-  end: string; // Preferred end time (e.g., "5PM")
-  days: string[]; // Preferred days of the week (e.g., ["MON", "TUE", "WED"])
-  classesPerDay: number; // Maximum number of classes per day
-  backToBack: boolean; // Preference for back-to-back classes
   studyTimes: { [key: string]: string[] }; // Selected study times for each day
 }
 
 // Define the props for the Preferences component
 interface PreferencesProps {
-  preferences: PreferencesData; // Current preferences data
-  setPreferences: React.Dispatch<React.SetStateAction<PreferencesData>>; // Function to update preferences
-  setTab: React.Dispatch<React.SetStateAction<"units" | "preferences" | "timetable">>; // Function to change the current tab
+  preferences: PreferencesData; // Correctly typed preferences
+  setPreferences: React.Dispatch<React.SetStateAction<PreferencesData>>;
+  setTab: React.Dispatch<React.SetStateAction<"units" | "preferences" | "timetable">>;
 }
 
 const Preferences: React.FC<PreferencesProps> = ({
@@ -31,6 +26,7 @@ const Preferences: React.FC<PreferencesProps> = ({
   const [studyTimes, setStudyTimes] = useState<{ [key: string]: string[] }>(
     preferences.studyTimes || {}
   );
+  
 
   // Log studyTimes to check initial state
   // useEffect(() => {

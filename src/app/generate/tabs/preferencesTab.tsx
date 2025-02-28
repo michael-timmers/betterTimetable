@@ -54,6 +54,13 @@ const Preferences: React.FC<PreferencesProps> = ({
         updatedTimes[day] = [...updatedTimes[day], timeValue]; // Select the time slot
       }
 
+      // Sort the times for the day from earliest to latest
+      updatedTimes[day].sort((a, b) => {
+        const [hourA] = a.split(":").map(Number);
+        const [hourB] = b.split(":").map(Number);
+        return hourA - hourB;
+      });
+
       return updatedTimes;
     });
   };

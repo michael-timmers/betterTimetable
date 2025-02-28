@@ -26,8 +26,7 @@ Note - The output does need to be returned in the format shown underneath the pr
 
 */
 
-import { transformCourseList, sortUnitsByOptions } from "./helperFunctions";
-import { filterByStartTime, filterByEndTime, filterByDays, filterByClassesPerDay, filterByBackToBack } from "./preferenceFunctions";
+import { filterByPreference, groupActivitiesWithinUnits, initializeScheduleData } from "./helperFunctions";
 import scheduleUnits from "./recursiveFunctions";
 
 
@@ -37,9 +36,6 @@ import scheduleUnits from "./recursiveFunctions";
 ///             these are used to provide structure to our data for type safety
 ///
 /// ----------------------------------------------------------------------------------------------------- ///
-
-
-
 
 
 
@@ -67,18 +63,6 @@ interface CourseList {
   [unitCode: string]: UnitData;
 }
 
-// Define the structure for scheduled times to keep track of occupied time slots
-interface ScheduledTime {
-  start: Date;
-  end: Date;
-  unitCode: string;
-  activity: string;
-}
-
-// Define the structure for tracking scheduled times per day
-interface CourseTimes {
-  [day: string]: ScheduledTime[]; // e.g., MON: [{...}, {...}]
-}
 
 // Define the structure for the filtered course list (the final schedule)
 interface FilteredCourseList {
@@ -119,38 +103,19 @@ export default function filterCourseList(
       ///   filteredCourseList - A dictionary element with the same structure as courseList but containing only filtered elements
       ///
 
-      // Filter by start time
-      courseList = filterByStartTime(courseList, start);
-    
-      // Filter by end time
-      courseList = filterByEndTime(courseList, end);
-    
-      // Filter by days
-      courseList = filterByDays(courseList, days);
-    
-      // Filter by classes per day (placeholder)
-      courseList = filterByClassesPerDay(courseList, classesPerDay);
-    
-      // Filter by back-to-back preference (placeholder)
-      courseList = filterByBackToBack(courseList, backToBack);
 
-      // Transform the course list using the transformCourseList function
-      const units = transformCourseList(courseList);
+      // STAGE 1 --- CONSIDER PREFERENCE
+      courseList = filterByPreference(courseList, start); 
 
-      // Alternative sorting: Schedule units with more options first
-      sortUnitsByOptions(units);
+      
+      // STAGE 2 --- GROUP ACTIVITIES WITHIN COURSES
+      const units = groupActivitiesWithinUnits(courseList); 
 
-      // Initialize course times to keep track of scheduled times per day
-      const scheduledTimesPerDay: CourseTimes = {
-        MON: [],
-        TUE: [],
-        WED: [],
-        THU: [],
-        FRI: [],
-      };
 
-      // Initialize the result object to store the final schedule
-      const finalSchedule: FilteredCourseList = {};
+      // STAGE 3 --- INITIALISE COURSE TIMES AND FINAL SCHEDULE DATA STRUCTURES
+      const { scheduledTimesPerDay, finalSchedule } = initializeScheduleData();;
+
+
 
       // Start scheduling units recursively
       const schedulingSuccess = scheduleUnits(
@@ -162,11 +127,11 @@ export default function filterCourseList(
 
       // Return the final schedule if successful, otherwise return null
       if (schedulingSuccess) {
-        console.log("Here is the final timetable.", finalSchedule);
+        // console.log("Here is the final timetable.", finalSchedule);
 
         return finalSchedule;
       } else {
-        console.warn("Unable to find a conflict-free schedule.");
+        // console.warn("Unable to find a conflict-free schedule.");
         return null;
       }
   }

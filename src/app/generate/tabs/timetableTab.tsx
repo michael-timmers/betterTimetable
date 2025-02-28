@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import filterCourseList from "../algorithms/coreAlgortithm";
+import filterCourseList from "../algorithms/coreAlgorithm";
 
 // Define interfaces and types for the components
 
@@ -60,7 +60,7 @@ const TimetableView: React.FC<TimetableViewProps> = ({
     preferences.backToBack
   ) || {} ;
 
-  console.log("timetableData", timetableData);
+  // console.log("timetableData", timetableData);
 
   return (
     <>

@@ -7,21 +7,90 @@
 
 
 
+// Define an interface for course times
+interface CourseTimes {
+  MON: any[];
+  TUE: any[];
+  WED: any[];
+  THU: any[];
+  FRI: any[];
+}
+
+
+// Define the structure for tracking scheduled times per day
+interface CourseTimes {
+  [day: string]: ScheduledTime[]; // e.g., MON: [{...}, {...}]
+}
+
+// Define the structure for scheduled times to keep track of occupied time slots
+interface ScheduledTime {
+  start: Date;
+  end: Date;
+  unitCode: string;
+  activity: string;
+}
+
+
 // Define the structure for an individual course
 interface Course {
-    id: string;
-    unitCode: string;
+  id: string;
+  unitCode: string;
+  unitName: string;
+  classType: string;
+  activity: string; // e.g., "LEC", "TUT", etc.
+  day: string;      // e.g., "MON", "TUE", etc.
+  time: string;     // e.g., "02:00pm - 04:00pm"
+  room: string;
+  teachingStaff: string;
+}
+
+// Define the structure for unit data, including the unit name and its courses
+interface UnitData {
+  unitName: string;
+  courses: Course[]; // List of courses under this unit
+}
+
+// Define the course list as a mapping from unit codes to unit data
+interface CourseList {
+  [unitCode: string]: UnitData;
+}
+
+// Define the structure for the filtered course list (the final schedule)
+interface FilteredCourseList {
+  [unitCode: string]: {
     unitName: string;
-    classType: string;
-    activity: string; // e.g., "LEC", "TUT", etc.
-    day: string;      // e.g., "MON", "TUE", etc.
-    time: string;     // e.g., "02:00pm - 04:00pm"
-    room: string;
-    teachingStaff: string;
-  }
-  
-  
-  
+    courses: Course[];
+  };
+}
+
+
+
+    
+/// ----------------------------------------------------------------------------------------------------- ///
+/// 
+///                                      PREFERENCE FUNCTIONS
+///          these are used to support our personal needs as students for the filtering algorithm
+///
+/// ----------------------------------------------------------------------------------------------------- ///
+
+
+
+export function filterByPreference(courseList: CourseList, start: string): FilteredCourseList {
+  //// Function to filter courses based on start time preference
+  ///
+  /// inputs:
+  ///   courseList: CourseList - The list of courses to filter
+  ///   start: string - The preferred earliest start time (e.g., "9:00am")
+  /// outputs:
+  ///   FilteredCourseList - The filtered list of courses
+  ///
+
+  return courseList;
+}
+
+
+
+
   
   /// ----------------------------------------------------------------------------------------------------- ///
   /// 
@@ -64,7 +133,7 @@ interface Course {
   
   
   
- export function transformCourseList(courseList: Record<string, 
+ export function groupActivitiesWithinUnits(courseList: Record<string, 
     { unitName: string; 
       courses: Course[] 
     }>): Array<{ 
@@ -103,38 +172,39 @@ interface Course {
       };
     });
   }
-  
-  
-  
-  
- export function sortUnitsByOptions(units: 
-    Array<{ 
-      unitCode: string; 
-      unitName: string; 
-      activities: Array<{ 
-        activityType: string; 
-        courses: Course[]
-      }> }>): void {
-    //// Function to sort units based on the number of scheduling options
-    ///
-    /// inputs:
-    ///   units: Array<{ unitCode: string; unitName: string; activities: Array<{ activityType: string; courses: Course[] }> }>
-    /// outputs:
-    ///   void - The input array is sorted in place
-    ///
-  
-    units.sort((unitA, unitB) => {
-      const optionsA = unitA.activities.reduce(
-        (acc, activity) => acc * activity.courses.length,
-        1
-      );
-      const optionsB = unitB.activities.reduce(
-        (acc, activity) => acc * activity.courses.length,
-        1
-      );
-      return optionsB - optionsA; // Note the reversal here
-    });
+
+
+
+
+  export function initializeScheduleData(): { 
+    scheduledTimesPerDay: CourseTimes; 
+    finalSchedule: FilteredCourseList } {
+  ///
+  /// Inputs:
+  ///   None
+  /// Outputs:
+  ///   An object containing:
+  ///     - scheduledTimesPerDay: A record of arrays representing scheduled times for each weekday.
+  ///     - finalSchedule: An object to store the final schedule.
+  ///
+
+    return {
+      scheduledTimesPerDay: {
+        MON: [],
+        TUE: [],
+        WED: [],
+        THU: [],
+        FRI: [],
+      },
+      finalSchedule: {},
+    };
   }
+
+  
+
+
+
+  
   
   
   

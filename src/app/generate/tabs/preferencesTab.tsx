@@ -33,9 +33,9 @@ const Preferences: React.FC<PreferencesProps> = ({
   );
 
   // Log studyTimes to check initial state
-  useEffect(() => {
-    console.log("Initial studyTimes: ", studyTimes);
-  }, [studyTimes]);
+  // useEffect(() => {
+  //   console.log("Initial studyTimes: ", studyTimes);
+  // }, [studyTimes]);
 
   // Function to handle selection of a study time slot
   const handleTimeSelection = (day: string, time: string) => {
@@ -52,7 +52,7 @@ const Preferences: React.FC<PreferencesProps> = ({
         updatedTimes[day] = [...updatedTimes[day], time]; // Select the time slot and maintain previous selections
       }
 
-      console.log(`Updated studyTimes for ${day}: `, updatedTimes);
+      // console.log(`Updated studyTimes for ${day}: `, updatedTimes);
 
       return updatedTimes;
     });

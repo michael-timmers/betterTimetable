@@ -104,7 +104,14 @@ export default function Navbar({ user }) {
               </details>
             </li>
           ) : (
-            <li><a href="/login" className="text-lg">Login</a></li>
+            <li key="/login">
+              <Link
+                href="/login" 
+                className={`mx-2 px-5 py-2 rounded-full text-lg ${pathname === "/login" ? "active-link" : "hover:bg-gray-700"}`}
+              >
+                Login
+              </Link>
+            </li>
           )}
         </ul>
       </div>

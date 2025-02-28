@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
 // Define the structure for user preferences data
 interface PreferencesData {
@@ -9,7 +9,7 @@ interface PreferencesData {
 
 // Define the props for the Preferences component
 interface PreferencesProps {
-  preferences: PreferencesData; // Correctly typed preferences
+  preferences: PreferencesData;
   setPreferences: React.Dispatch<React.SetStateAction<PreferencesData>>;
   setTab: React.Dispatch<React.SetStateAction<"units" | "preferences" | "timetable">>;
 }
@@ -20,21 +20,27 @@ const Preferences: React.FC<PreferencesProps> = ({
   setTab,
 }) => {
   const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
-  const times = Array.from({ length: 12 }, (_, i) => `${i + 8}:00`); // Times from 8:00 AM to 7:00 PM
+
+  // Generate times from 8 AM to 9 PM (14 hours)
+  const times = Array.from({ length: 14 }, (_, i) => {
+    const hour24 = i + 8; // 8 to 21 inclusive
+    const hour12 = hour24 % 12 === 0 ? 12 : hour24 % 12; // Convert to 12-hour format
+    const period = hour24 < 12 || hour24 === 24 ? "AM" : "PM";
+    const timeLabel = `${hour12} ${period}`; // No ":00" and no leading zero
+    const timeValue = `${hour24}:00`; // For internal tracking
+    return {
+      label: timeLabel,
+      value: timeValue,
+    };
+  });
 
   // Initialize studyTimes state with preferences.studyTimes or empty object
   const [studyTimes, setStudyTimes] = useState<{ [key: string]: string[] }>(
     preferences.studyTimes || {}
   );
-  
-
-  // Log studyTimes to check initial state
-  // useEffect(() => {
-  //   console.log("Initial studyTimes: ", studyTimes);
-  // }, [studyTimes]);
 
   // Function to handle selection of a study time slot
-  const handleTimeSelection = (day: string, time: string) => {
+  const handleTimeSelection = (day: string, timeValue: string) => {
     setStudyTimes((prev) => {
       const updatedTimes = { ...prev };
       if (!updatedTimes[day]) {
@@ -42,13 +48,11 @@ const Preferences: React.FC<PreferencesProps> = ({
       }
 
       // Toggle selection of the time slot
-      if (updatedTimes[day].includes(time)) {
-        updatedTimes[day] = updatedTimes[day].filter((t) => t !== time); // Deselect if already selected
+      if (updatedTimes[day].includes(timeValue)) {
+        updatedTimes[day] = updatedTimes[day].filter((t) => t !== timeValue); // Deselect if already selected
       } else {
-        updatedTimes[day] = [...updatedTimes[day], time]; // Select the time slot and maintain previous selections
+        updatedTimes[day] = [...updatedTimes[day], timeValue]; // Select the time slot
       }
-
-      // console.log(`Updated studyTimes for ${day}: `, updatedTimes);
 
       return updatedTimes;
     });
@@ -70,38 +74,38 @@ const Preferences: React.FC<PreferencesProps> = ({
 
       {/* Graph-like UI for Day and Time Selection */}
       <div className="w-full overflow-x-auto">
-        <div className="grid grid-cols-6 gap-0.5">
+        <div className="grid grid-cols-[0.5fr_repeat(5,1fr)] gap-0.5">
           {/* Empty top-left corner */}
-          <div className="bg-gray-800 p-2"></div>
+          <div className="bg-gray-900 p-2"></div>
 
           {/* Day Headers */}
           {daysOfWeek.map((day) => (
             <div
               key={day}
-              className="bg-gray-800 p-2 text-white text-center font-semibold"
+              className="bg-gray-900 p-4 text-white text-center font-semibold"
             >
               {day}
             </div>
           ))}
 
           {/* Time Rows */}
-          {times.map((time) => (
-            <React.Fragment key={time}>
+          {times.map(({ label, value }) => (
+            <React.Fragment key={value}>
               {/* Time Label */}
-              <div className="bg-gray-800 p-2 text-white text-center flex items-center justify-center">
-                {time}
+              <div className="bg-gray-900 p-3 text-white text-center flex items-center justify-center">
+                {label}
               </div>
 
               {/* Day Columns */}
               {daysOfWeek.map((day) => (
                 <div
-                  key={`${day}-${time}`}
+                  key={`${day}-${value}`}
                   className={`p-2 cursor-pointer ${
-                    studyTimes[day]?.includes(time)
-                      ? "bg-blue-1000" // Highlight selected time slots
+                    studyTimes[day]?.includes(value)
+                      ? "bg-blue-600" // Highlight selected time slots
                       : "bg-gray-700 hover:bg-gray-600" // Default and hover styles
                   }`}
-                  onClick={() => handleTimeSelection(day, time)}
+                  onClick={() => handleTimeSelection(day, value)}
                 ></div>
               ))}
             </React.Fragment>

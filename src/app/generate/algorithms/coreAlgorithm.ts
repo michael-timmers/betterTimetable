@@ -26,7 +26,7 @@ Note - The output does need to be returned in the format shown underneath the pr
 
 */
 
-import { filterByUnavailability, groupActivitiesByUnit } from "./helperFunctions";
+import { filterByAvailability, groupActivitiesByUnit } from "./helperFunctions";
 import scheduleUnits from "./recursiveFunctions";
 import { CourseList, CourseTimes, FilteredCourseList, UnitDomain } from "./interfaces";
 
@@ -42,7 +42,7 @@ import { CourseList, CourseTimes, FilteredCourseList, UnitDomain } from "./inter
 
   export default function generateSchedule(
     courseList: CourseList,
-    unavailableTimes: { [day: string]: string[] },
+    availableTimes: { [day: string]: string[] },
   ): FilteredCourseList | null {
     ///
     /// This function generates a schedule based on selected courses and user availability.
@@ -56,11 +56,17 @@ import { CourseList, CourseTimes, FilteredCourseList, UnitDomain } from "./inter
     ///   filteredCourseList - A mapping similar to courseList but containing only the selected timeslots.
     ///
     
-    console.log("User unavailable times:", unavailableTimes);
+    console.log("User available times:", availableTimes);
   
-    // STAGE 1 --- APPLY UNAVAILABILITY FILTER
-    const availableCourses = filterByUnavailability(courseList, unavailableTimes);
+    // STAGE 1 --- APPLY AVAILABILITY FILTER
+    const availableCourses = filterByAvailability(courseList, availableTimes);
+    console.log("Here are the available timeslots", availableCourses);
   
+    if (!availableCourses){
+      console.warn("Unable to create a schedule within the given timeframe.");
+      return null;
+    }
+
     // STAGE 2 --- GROUP ACTIVITIES WITHIN UNITS
     const unitDomains: UnitDomain[] = groupActivitiesByUnit(availableCourses);
   

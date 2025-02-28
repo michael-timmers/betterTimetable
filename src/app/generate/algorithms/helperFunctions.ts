@@ -10,23 +10,83 @@ import { Course, CourseList, CourseTimes, FilteredCourseList } from "./interface
 ///
 /// ----------------------------------------------------------------------------------------------------- ///
 
-export function filterByUnavailability(
+export function filterByAvailability(
   courseList: CourseList,
   studyTimes: { [key: string]: string[] }
-): FilteredCourseList {
+): FilteredCourseList | null {
   ///
-  /// Function to filter courses based on preferred study times.
+  /// Function to filter courses based on the user's available times.
   ///
-  /// inputs:
-  ///   courseList - The list of courses to filter.
-  ///   studyTimes - A dictionary mapping days to preferred study times.
-  /// outputs:
-  ///   FilteredCourseList - The filtered list of courses based on study times.
+  /// Inputs:
+  ///   - courseList: The list of courses to filter.
+  ///   - studyTimes: A dictionary mapping days to the user's available times.
+  /// Outputs:
+  ///   - FilteredCourseList: The filtered list of courses based on the user's availability.
+  ///   - If any unit has no timeslots left after filtering, returns null.
   ///
+  
+  const filteredCourseList: FilteredCourseList = {};
+  
+  // Iterate over each unit in the courseList
+  for (const unitCode in courseList) {
+    const unit = courseList[unitCode];
+    const filteredCourses: Course[] = [];
+  
+    console.log("HERE IS THE ACTUAL UNIT CODE!!!!", unit);
 
-  // Implement filtering logic based on studyTimes
-  // Placeholder: Return the courseList unchanged for now
-  return courseList;
+    // Iterate over each course in the unit
+    for (const course of unit.courses) {
+      const courseDayAbbr = course.day; // e.g., 'TUE'
+      const fullDayName = dayMap[courseDayAbbr];
+  
+      if (!fullDayName) {
+        console.warn(`Unrecognized day abbreviation: ${courseDayAbbr}`);
+        continue; // Skip this course or handle appropriately
+      }
+  
+      // Get the user's available times for the course day
+      const availableTimes = studyTimes[fullDayName];
+  
+      if (!availableTimes || availableTimes.length === 0) {
+        // No availability on this day; exclude the course
+        continue;
+      }
+  
+      // Parse the course's start and end times into minutes
+      const { start: courseStart, end: courseEnd } = parseCourseTimeRangeInMinutes(course.time);
+  
+      // Generate all 30-minute increments between courseStart and courseEnd
+      const courseTimes = generateCourseTimeSlots(courseStart, courseEnd);
+  
+      // Check if all of these times are within the user's available times
+      const isWithinAvailability = courseTimes.every((timeStr) => availableTimes.includes(timeStr));
+      console.log(
+        "Course Times:", courseTimes,
+        "\nAvailable Times:", availableTimes,
+        "\nIs the course time within availability?", isWithinAvailability
+      );
+
+      if (isWithinAvailability) {
+        // All times are within availability; include the course
+        filteredCourses.push(course);
+      }
+      // Else, do not include the course
+    }
+  
+    // If any activity has no timeslots left, return null
+    if (filteredCourses.length === 0) {
+      return null;
+    } else {
+      // Include the unit with its filtered courses
+      filteredCourseList[unitCode] = {
+        unitName: unit.unitName,
+        courses: filteredCourses,
+      };
+    }
+  }
+  
+  // Return the filtered course list
+  return filteredCourseList;
 }
 
 
@@ -178,4 +238,107 @@ export function initializeScheduleData(): {
   }
   
   
+
+  const dayMap: { [key: string]: string } = {
+    'MON': 'Monday',
+    'TUE': 'Tuesday',
+    'WED': 'Wednesday',
+    'THU': 'Thursday',
+    'FRI': 'Friday',
+    'SAT': 'Saturday',
+    'SUN': 'Sunday',
+  };
   
+  
+
+
+function parseTimeStringToMinutes(timeStr: string): number {
+  // Helper function to parse time strings into minutes since midnight
+  ////
+  //// Function to parse time strings into minutes since midnight
+  ////
+  //// inputs:
+  ////   timeStr: string - Time string in format "HH:MM" or "HH:MMam/pm"
+  //// outputs:
+  ////   number - Time in minutes since midnight
+  ////
+
+  let time = timeStr.trim();
+  let isAmPm = false;
+  let ampm = "";
+
+  if (time.toLowerCase().endsWith("am") || time.toLowerCase().endsWith("pm")) {
+    isAmPm = true;
+    ampm = time.slice(-2).toLowerCase();
+    time = time.slice(0, -2).trim();
+  }
+
+  const [hourStr, minuteStr = "0"] = time.split(":");
+  let hour = parseInt(hourStr, 10);
+  let minute = parseInt(minuteStr, 10);
+
+  if (isAmPm) {
+    if (ampm === "pm" && hour !== 12) {
+      hour += 12;
+    } else if (ampm === "am" && hour === 12) {
+      hour = 0;
+    }
+  }
+
+  return hour * 60 + minute;
+}
+
+
+function parseCourseTimeRangeInMinutes(timeRange: string): { start: number; end: number } {
+  //// Function to parse course time ranges into start and end times in minutes
+  ////
+  //// inputs:
+  ////   timeRange: string - Time range string in format "HH:MMam/pm - HH:MMam/pm"
+  //// outputs:
+  ////   { start: number; end: number } - Start and end times in minutes since midnight
+  ////
+  const [startStr, endStr] = timeRange.split("-").map((t) => t.trim());
+  const start = parseTimeStringToMinutes(startStr);
+  const end = parseTimeStringToMinutes(endStr);
+  return { start, end };
+}
+
+
+function generateCourseTimeSlots(startTime: number, endTime: number): string[] {
+  //// Function to generate 30-minute time slots between start and end times
+  ////
+  //// inputs:
+  ////   startTime: number - Start time in minutes since midnight
+  ////   endTime: number - End time in minutes since midnight
+  //// outputs:
+  ////   string[] - Array of time strings in "HH:MM" format representing 30-minute increments
+  ////
+  const times: string[] = [];
+
+  // Ensure that we start from the exact start time
+  let currentTime = startTime;
+
+  while (currentTime < endTime) {
+    const timeStr = formatTimeMinutesToString(currentTime);
+    times.push(timeStr);
+    currentTime += 30; // Increment by 30 minutes
+  }
+
+  return times;
+}
+
+function formatTimeMinutesToString(timeInMinutes: number): string {
+  
+  //// Function to format time in minutes to a string "HH:MM" with leading zeros
+  ////
+  //// inputs:
+  ////   timeInMinutes: number - Time in minutes since midnight
+  //// outputs:
+  ////   string - Time string in "HH:MM" format
+  ////
+  const hour = Math.floor(timeInMinutes / 60);
+  const minute = timeInMinutes % 60;
+  const hourStr = hour.toString(); // Removed padStart for hours
+  const minuteStr = minute.toString().padStart(2, "0"); // Keep leading zero for minutes
+  return `${hourStr}:${minuteStr}`;
+}

@@ -21,13 +21,17 @@ const Preferences: React.FC<PreferencesProps> = ({
 }) => {
   const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
-  // Generate times from 8 AM to 9 PM (14 hours)
-  const times = Array.from({ length: 14 }, (_, i) => {
-    const hour24 = i + 8; // 8 to 21 inclusive
-    const hour12 = hour24 % 12 === 0 ? 12 : hour24 % 12; // Convert to 12-hour format
-    const period = hour24 < 12 || hour24 === 24 ? "AM" : "PM";
-    const timeLabel = `${hour12} ${period}`; // No ":00" and no leading zero
-    const timeValue = `${hour24}:00`; // For internal tracking
+  // Generate times from 8:00 AM to 8:30 PM in 30-minute intervals (26 slots)
+  const times = Array.from({ length: 26 }, (_, i) => {
+    const totalMinutes = 8 * 60 + i * 30; // Start at 8:00 AM, increment by 30 minutes
+    const hour24 = Math.floor(totalMinutes / 60);
+    const minute = totalMinutes % 60;
+    const hour12 = hour24 % 12 === 0 ? 12 : hour24 % 12;
+    const period = hour24 >= 12 ? "PM" : "AM";
+    const minuteStr = minute === 0 ? "00" : "30";
+    const timeLabel = minute === 0 ? `${hour12} ${period}` : ""; // Only label on the hour
+    const timeValue = `${hour24}:${minuteStr}`; // For internal tracking (e.g., "8:00", "8:30")
+
     return {
       label: timeLabel,
       value: timeValue,
@@ -54,11 +58,13 @@ const Preferences: React.FC<PreferencesProps> = ({
         updatedTimes[day] = [...updatedTimes[day], timeValue]; // Select the time slot
       }
 
-      // Sort the times for the day from earliest to latest
+      // Sort the times for the day from earliest to latest (considering minutes)
       updatedTimes[day].sort((a, b) => {
-        const [hourA] = a.split(":").map(Number);
-        const [hourB] = b.split(":").map(Number);
-        return hourA - hourB;
+        const [hourA, minuteA] = a.split(":").map(Number);
+        const [hourB, minuteB] = b.split(":").map(Number);
+        const totalMinutesA = hourA * 60 + (minuteA || 0);
+        const totalMinutesB = hourB * 60 + (minuteB || 0);
+        return totalMinutesA - totalMinutesB;
       });
 
       return updatedTimes;
@@ -96,10 +102,13 @@ const Preferences: React.FC<PreferencesProps> = ({
           ))}
 
           {/* Time Rows */}
-          {times.map(({ label, value }) => (
+          {times.map(({ label, value }, index) => (
             <React.Fragment key={value}>
               {/* Time Label */}
-              <div className="bg-gray-900 p-3 text-white text-center flex items-center justify-center">
+              <div
+                className={`bg-gray-900 text-white text-center flex items-center justify-center`}
+                style={{ height: "30px" }} // Equal height for all time rows (adjust as needed)
+              >
                 {label}
               </div>
 
@@ -112,11 +121,13 @@ const Preferences: React.FC<PreferencesProps> = ({
                       ? "bg-blue-600" // Highlight selected time slots
                       : "bg-gray-700 hover:bg-gray-600" // Default and hover styles
                   }`}
+                  style={{ height: "30px" }} // Match the height of the time label rows
                   onClick={() => handleTimeSelection(day, value)}
                 ></div>
               ))}
             </React.Fragment>
           ))}
+
         </div>
       </div>
 

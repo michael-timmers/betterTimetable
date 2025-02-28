@@ -1,60 +1,8 @@
-/// ----------------------------------------------------------------------------------------------------- ///
-/// 
-///                                      INTERFACES
-///             these are used to provide structure to our data for type safety
-///
-/// ----------------------------------------------------------------------------------------------------- ///
+import { Course, CourseList, CourseTimes, FilteredCourseList } from "./interfaces";
 
 
 
 
-// Define an interface for course times
-interface CourseTimes {
-  [day: string]: ScheduledTime[]; // e.g., MON: [{...}, {...}]
-}
-
-// Define the structure for scheduled times to keep track of occupied time slots
-interface ScheduledTime {
-  start: Date;
-  end: Date;
-  unitCode: string;
-  activity: string;
-}
-
-// Define the structure for an individual course
-interface Course {
-  id: string;
-  unitCode: string;
-  unitName: string;
-  classType: string;
-  activity: string; // e.g., "LEC", "TUT", etc.
-  day: string;      // e.g., "MON", "TUE", etc.
-  time: string;     // e.g., "02:00pm - 04:00pm"
-  room: string;
-  teachingStaff: string;
-}
-
-// Define the structure for unit data, including the unit name and its courses
-interface UnitData {
-  unitName: string;
-  courses: Course[]; // List of courses under this unit
-}
-
-// Define the course list as a mapping from unit codes to unit data
-interface CourseList {
-  [unitCode: string]: UnitData;
-}
-
-// Define the structure for the filtered course list (the final schedule)
-interface FilteredCourseList {
-  [unitCode: string]: {
-    unitName: string;
-    courses: Course[];
-  };
-}
-
-
-    
 /// ----------------------------------------------------------------------------------------------------- ///
 /// 
 ///                              STAGE 1 - FILTER BY UNAVAILABLE TIMES

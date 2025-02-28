@@ -4,6 +4,7 @@ import { useState } from "react";
 import Units from "./unitsTab";
 import Preferences from "./preferencesTab";
 import TimetableView from "./timetableTab";
+import { PreferencesData } from '../algorithms/interfaces'
 
 // Define the structure for a Course
 interface Course {
@@ -24,10 +25,6 @@ interface CourseData {
   courses: Course[];    // List of courses under this unit
 }
 
-// Define the structure for user preferences
-interface PreferencesData {
-  studyTimes: { [key: string]: string[] }; // Study times for each day
-}
 
 // Main component that manages the application tabs and state
 export default function ManageTabs() {

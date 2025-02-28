@@ -26,67 +26,9 @@ Note - The output does need to be returned in the format shown underneath the pr
 
 */
 
-import { filterByUnavailability, groupActivitiesByUnit, initializeScheduleData } from "./helperFunctions";
+import { filterByUnavailability, groupActivitiesByUnit } from "./helperFunctions";
 import scheduleUnits from "./recursiveFunctions";
-
-
-/// ----------------------------------------------------------------------------------------------------- ///
-/// 
-///                                      INTERFACES
-///             these are used to provide structure to our data for type safety
-///
-/// ----------------------------------------------------------------------------------------------------- ///
-
-
-
-// Define the structure for an individual course
-interface Course {
-  id: string;
-  unitCode: string;
-  unitName: string;
-  classType: string;
-  activity: string; // e.g., "LEC", "TUT", etc.
-  day: string;      // e.g., "MON", "TUE", etc.
-  time: string;     // e.g., "02:00pm - 04:00pm"
-  room: string;
-  teachingStaff: string;
-}
-
-// Define the structure for scheduled times to keep track of occupied time slots
-interface ScheduledTime {
-  start: Date;
-  end: Date;
-  unitCode: string;
-  activity: string;
-}
-
-// Define the structure for tracking scheduled times per day
-interface CourseTimes {
-  [day: string]: ScheduledTime[]; // e.g., MON: [{...}, {...}]
-}
-
-// Define the structure for the filtered course list (the final schedule)
-interface FilteredCourseList {
-  [unitCode: string]: {
-    unitName: string;
-    courses: Course[];
-  };
-}
-
-// Define the structure for domains (available courses) for units and activities
-interface UnitDomain {
-  unitCode: string;
-  unitName: string;
-  activities: ActivityDomain[];
-}
-
-interface ActivityDomain {
-  activityType: string;
-  courses: Course[];
-}
-
-
-
+import { CourseList, CourseTimes, FilteredCourseList, UnitDomain } from "./interfaces";
 
 
 

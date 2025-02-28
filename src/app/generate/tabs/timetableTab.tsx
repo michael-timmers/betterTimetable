@@ -24,9 +24,9 @@ interface CourseData {
   courses: Course[]; // Array of course sessions under this unit
 }
 
-// User's preferences for timetable customization
+// Define the structure for user preferences data
 interface PreferencesData {
-  studyTimes: string[];
+  studyTimes: { [key: string]: string[] }; // Selected study times for each day
 }
 
 // Props for the TimetableView component
@@ -36,6 +36,9 @@ interface TimetableViewProps {
   preferences: PreferencesData;              // User's preferences for the timetable
   setTab: React.Dispatch<React.SetStateAction<"units" | "preferences" | "timetable">>; // Function to navigate between tabs
 }
+
+
+
 
 // TimetableView Component: Generates and displays the timetable based on courses and preferences
 const TimetableView: React.FC<TimetableViewProps> = ({
@@ -79,14 +82,6 @@ const TimetableView: React.FC<TimetableViewProps> = ({
         courses={timetableData || {}}
         unitColors={unitColors}
       />
-
-      {/* Display the course list in JSON format for debugging or informational purposes */}
-      <div className="mt-6 w-full bg-gray-900 p-4 rounded-lg">
-        <h2 className="text-xl mb-2">Updated Course List (JSON Format):</h2>
-        <pre className="text-sm text-gray-300">
-          {JSON.stringify(courseList, null, 2)}
-        </pre>
-      </div>
     </>
   );
 };
@@ -170,12 +165,12 @@ const Timetable: React.FC<TimetableProps> = ({ courses, unitColors }) => {
   // Group the courses by day and time
   const timetable = groupClassesByDay(allCourses);
 
-  // Time slots from 8 AM to 8 PM in half-hour increments
+  // Time slots from 8 AM to 9 PM in half-hour increments
   const timeSlots = Array.from(
-    { length: (20 - 8) * 2 + 1 },
+    { length: (21 - 8) * 2 + 1 }, // This resulted in 27 slots
     (_, i) => 8 + i * 0.5
   );
-
+  
   return (
     <div className="w-full overflow-x-auto">
       {/* Header row with day names */}
@@ -260,16 +255,18 @@ const Timetable: React.FC<TimetableProps> = ({ courses, unitColors }) => {
               </div>
             ))}
             {/* Overlay grid lines */}
-            <div className="absolute inset-0 grid grid-rows-[repeat(24,_1fr)]">
+            <div className="absolute inset-0 grid grid-rows-[repeat(26,_1fr)]">
               {timeSlots.map((_, idx) => (
                 <div key={idx} className="border-b border-gray-600 h-8"></div>
               ))}
             </div>
+
           </div>
         ))}
       </div>
     </div>
   );
 };
+
 
 export default TimetableView;

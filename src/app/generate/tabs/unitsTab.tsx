@@ -93,7 +93,6 @@ const Units: React.FC<UnitsProps> = ({
         const response = await fetch(
           `/api/course-data?unitCode=${formattedUnitCode}&teachingPeriod=${period.value}`
         );
-        console.log("API Call -", response.url);
 
         const data = await response.json();
 

@@ -45,11 +45,8 @@ const TimetableView: React.FC<TimetableViewProps> = ({
   setTab,
 }) => {
 
-
   // Filter the course list based on user preferences to generate a conflict-free timetable
-  const timetableData = filterCourseList(courseList, preferences.studyTimes) || {};
-
-  // console.log("here are the study times: ", preferences.studyTimes);
+  const timetableData = filterCourseList(courseList, preferences.studyTimes);
 
   return (
     <>
@@ -70,8 +67,18 @@ const TimetableView: React.FC<TimetableViewProps> = ({
       {/* Divider */}
       <div className="border-b border-gray-500 w-full my-4"></div>
 
-      {/* Display the generated timetable shown below */}
-      <Timetable courses={timetableData} unitColors={unitColors} />
+      {/* Display message if no timetable could be generated */}
+      {!timetableData && (
+        <div className="text-red-500 text-center mb-4">
+          Unable to create a conflict-free timetable with the selected preferences.
+        </div>
+      )}
+
+      {/* Display the timetable (even if empty) */}
+      <Timetable
+        courses={timetableData || {}}
+        unitColors={unitColors}
+      />
 
       {/* Display the course list in JSON format for debugging or informational purposes */}
       <div className="mt-6 w-full bg-gray-900 p-4 rounded-lg">
@@ -83,9 +90,6 @@ const TimetableView: React.FC<TimetableViewProps> = ({
     </>
   );
 };
-
-
-
 
 // Timetable Component: Renders the timetable grid with courses placed appropriately
 interface TimetableProps {
@@ -136,6 +140,11 @@ const groupClassesByDay = (courses: Course[]) => {
     timetable[day] = {};
   });
 
+  // If there are no courses, return the empty timetable
+  if (!courses || courses.length === 0) {
+    return timetable;
+  }
+
   // Loop through each course and place it in the timetable based on day and start time
   courses.forEach((course) => {
     const { start } = parseTime(course.time);
@@ -149,9 +158,6 @@ const groupClassesByDay = (courses: Course[]) => {
 
   return timetable;
 };
-
-
-
 
 const Timetable: React.FC<TimetableProps> = ({ courses, unitColors }) => {
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
@@ -265,10 +271,5 @@ const Timetable: React.FC<TimetableProps> = ({ courses, unitColors }) => {
     </div>
   );
 };
-
-
-
-
-
 
 export default TimetableView;

@@ -52,17 +52,18 @@ interface Course {
   teachingStaff: string;
 }
 
-// Define the structure for unit data, including the unit name and its courses
-interface UnitData {
-  unitName: string;
-  courses: Course[]; // List of courses under this unit
+// Define the structure for scheduled times to keep track of occupied time slots
+interface ScheduledTime {
+  start: Date;
+  end: Date;
+  unitCode: string;
+  activity: string;
 }
 
-// Define the course list as a mapping from unit codes to unit data
-interface CourseList {
-  [unitCode: string]: UnitData;
+// Define the structure for tracking scheduled times per day
+interface CourseTimes {
+  [day: string]: ScheduledTime[]; // e.g., MON: [{...}, {...}]
 }
-
 
 // Define the structure for the filtered course list (the final schedule)
 interface FilteredCourseList {
@@ -70,6 +71,18 @@ interface FilteredCourseList {
     unitName: string;
     courses: Course[];
   };
+}
+
+// Define the structure for domains (available courses) for units and activities
+interface UnitDomain {
+  unitCode: string;
+  unitName: string;
+  activities: ActivityDomain[];
+}
+
+interface ActivityDomain {
+  activityType: string;
+  courses: Course[];
 }
 
 
@@ -85,52 +98,65 @@ interface FilteredCourseList {
 /// ----------------------------------------------------------------------------------------------------- ///
 
 
-export default function generateSchedule(
-  courseList: CourseList,
-  unavailableTimes: { [day: string]: string[] },
-): FilteredCourseList | null {
-  ///
-  /// This function generates a schedule based on selected courses and user availability.
-  /// It returns a filtered list containing one timeslot per activity for each course,
-  /// ensuring that selected times do not conflict with user unavailability.
-  ///
-  /// Inputs:
-  ///   courseList - A mapping of unit codes to their corresponding course details and timeslots.
-  ///   unavailableTimes - A mapping of days to arrays of times when the user is unavailable.
-  /// Output:
-  ///   filteredCourseList - A mapping similar to courseList but containing only the selected timeslots.
-  ///
-
-  console.log("User unavailable times:", unavailableTimes);
-
-  // STAGE 1 --- APPLY UNAVAILABILITY FILTER
-  const availableCourses = filterByUnavailability(courseList, unavailableTimes);
-
-  // STAGE 2 --- GROUP ACTIVITIES WITHIN UNITS
-  const groupedUnits = groupActivitiesByUnit(availableCourses);
-
-  // STAGE 3 --- INITIALIZE SCHEDULE DATA STRUCTURES
-  const { scheduledTimesPerDay, finalSchedule } = initializeScheduleData();
-
-  // STAGE 4 --- RECURSIVELY SCHEDULE UNITS
-  const startingUnitIndex = 0;
-  const schedulingSuccess = scheduleUnits(
-    startingUnitIndex,
-    groupedUnits,
-    scheduledTimesPerDay,
-    finalSchedule
-  );
-
-  // STAGE 5 --- RETURN FINAL SCHEDULE
-  if (schedulingSuccess) {
-    // console.log("Final timetable generated:", finalSchedule);
-    return finalSchedule;
-  } else {
-    // console.warn("Unable to create a conflict-free schedule.");
-    return null;
+  export default function generateSchedule(
+    courseList: CourseList,
+    unavailableTimes: { [day: string]: string[] },
+  ): FilteredCourseList | null {
+    ///
+    /// This function generates a schedule based on selected courses and user availability.
+    /// It returns a filtered list containing one timeslot per activity for each course,
+    /// ensuring that selected times do not conflict with user unavailability.
+    ///
+    /// Inputs:
+    ///   courseList - A mapping of unit codes to their corresponding course details and timeslots.
+    ///   unavailableTimes - A mapping of days to arrays of times when the user is unavailable.
+    /// Output:
+    ///   filteredCourseList - A mapping similar to courseList but containing only the selected timeslots.
+    ///
+    
+    console.log("User unavailable times:", unavailableTimes);
+  
+    // STAGE 1 --- APPLY UNAVAILABILITY FILTER
+    const availableCourses = filterByUnavailability(courseList, unavailableTimes);
+  
+    // STAGE 2 --- GROUP ACTIVITIES WITHIN UNITS
+    const unitDomains: UnitDomain[] = groupActivitiesByUnit(availableCourses);
+  
+    // Debugging: Validate unitDomains
+    console.log("unitDomains:", unitDomains);
+    console.log("Is unitDomains an array:", Array.isArray(unitDomains));
+  
+    if (!Array.isArray(unitDomains)) {
+      console.error("unitDomains is not an array!");
+      return null;
+    }
+  
+    // STAGE 3 --- INITIALIZE SCHEDULE DATA STRUCTURES
+    const scheduledTimesPerDay: CourseTimes = {
+      MON: [],
+      TUE: [],
+      WED: [],
+      THU: [],
+      FRI: [],
+    };
+    const finalSchedule: FilteredCourseList = {};
+  
+    // STAGE 4 --- RECURSIVELY SCHEDULE UNITS
+    const schedulingSuccess = scheduleUnits(
+      unitDomains,
+      scheduledTimesPerDay,
+      finalSchedule
+    );
+  
+    // STAGE 5 --- RETURN FINAL SCHEDULE
+    if (schedulingSuccess) {
+      console.log("Final timetable generated:", finalSchedule);
+      return finalSchedule;
+    } else {
+      console.warn("Unable to create a conflict-free schedule.");
+      return null;
+    }
   }
-}
-
-
+  
 
 

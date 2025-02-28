@@ -1,66 +1,64 @@
-
 // scheduleUnits(unitDomains, scheduledTimesPerDay, finalSchedule)
 
 // ├── **Base Case:** If all units are scheduled:
 // │     └── Return true (scheduling successful)
 // │
-// ├── **Select Next Unit U Using MRV:**
+// ├── **Select Next Unit Using MRV (Minimum Remaining Values):**
 // │     ├── Units are dynamically ordered based on current domains
-// │     └── U is the unit with the minimum total number of remaining course options
+// │     └── **Selected Unit** is the one with the minimum total number of remaining course options
 // │
-// ├── **Initialize Unit in Final Schedule:**
-// │     └── Add U to finalSchedule with empty courses array
+// ├── **Initialize Selected Unit in Final Schedule:**
+// │     └── Add the selected unit to `finalSchedule` with an empty `courses` array
 // │
-// ├── **Sort Activities in U Using MRV:**
-// │     └── Activities in U are ordered based on the number of remaining course options
+// ├── **Sort Activities in Selected Unit Using MRV:**
+// │     └── Activities within the unit are ordered based on the number of remaining course options
 // │
-// ├── **Schedule Activities for Unit U:**
-// │     └── **scheduleActivities(U, activityIndex, unitDomains, scheduledTimesPerDay, finalSchedule)**
+// ├── **Schedule Activities for Selected Unit:**
+// │     └── **scheduleActivities(selectedUnit, activityIndex, unitDomains, scheduledTimesPerDay, finalSchedule)**
 // │
-// │       ├── **Base Case:** If all activities in U are scheduled:
-// │       │     └── Recursively call scheduleUnits with remainingUnits
-// │       │           ├── If success, return true
+// │       ├── **Base Case:** If all activities in the selected unit are scheduled:
+// │       │     └── Recursively call `scheduleUnits` with remaining units
+// │       │           ├── If successful, return true
 // │       │           └── Else, backtrack
 // │       │
-// │       ├── **For Activity A at activityIndex in U:**
-// │       │     ├── **Order Courses in A Using LCV:**
-// │       │     │     └── Courses are ordered based on their impact on future options
+// │       ├── **For Activity at `activityIndex` in Selected Unit:**
+// │       │     ├── **Order Courses in Activity Using LCV (Least Constraining Values):**
+// │       │     │     └── Courses are ordered based on their impact on future scheduling options
 // │       │     │
-// │       │     ├── **For Each Course C in Ordered Courses of A:**
+// │       │     ├── **For Each Course in Ordered Courses of Activity:**
 // │       │     │
 // │       │     │   ├── **Check for Time Conflicts with Scheduled Courses:**
-// │       │     │   │     └── If conflict exists, continue to next C
+// │       │     │   │     └── If a conflict exists, continue to the next course
 // │       │     │   │
 // │       │     │   ├── **Apply Forward Checking:**
 // │       │     │   │     ├── Temporarily prune conflicting courses from future unit domains
 // │       │     │   │     ├── If any unit domain becomes empty:
-// │       │     │   │     │     └── Undo pruning and continue to next C
-// │       │     │   │     └── Proceed if domains are valid
+// │       │     │   │     │     └── Undo pruning and continue to the next course
+// │       │     │   │     └── Proceed if domains remain valid
 // │       │     │   │
-// │       │     │   ├── **Tentatively Assign C to A:**
-// │       │     │   │     ├── Add C to finalSchedule[U.unitCode].courses
-// │       │     │   │     ├── Add scheduled time to scheduledTimesPerDay
+// │       │     │   ├── **Tentatively Assign Course to Activity:**
+// │       │     │   │     ├── Add the course to `finalSchedule[selectedUnit.unitCode].courses`
+// │       │     │   │     ├── Add the scheduled time to `scheduledTimesPerDay`
 // │       │     │   │
 // │       │     │   ├── **Recursively Schedule Next Activity:**
-// │       │     │   │     ├── Call scheduleActivities(U, activityIndex + 1, prunedDomains, scheduledTimesPerDay, finalSchedule)
-// │       │     │   │     ├── If success, return true
+// │       │     │   │     ├── Call `scheduleActivities(selectedUnit, activityIndex + 1, prunedDomains, scheduledTimesPerDay, finalSchedule)`
+// │       │     │   │     ├── If successful, return true
 // │       │     │   │     └── Else, backtrack
 // │       │     │   │
 // │       │     │   ├── **Backtrack:**
-// │       │     │   │     ├── Remove C from finalSchedule[U.unitCode].courses
-// │       │     │   │     └── Remove scheduled time from scheduledTimesPerDay
+// │       │     │   │     ├── Remove the course from `finalSchedule[selectedUnit.unitCode].courses`
+// │       │     │   │     └── Remove the scheduled time from `scheduledTimesPerDay`
 // │       │     │
 // │       │     └── **If All Courses Tried and Failed:**
 // │       │           └── Return false (unable to schedule this activity)
 // │       │
-// │       └── **Return:** If scheduling activities successful, return true; else, backtrack
+// │       └── **Return:** If scheduling activities is successful, return true; else, backtrack
 // │
 // ├── **Conflict-Directed Backjumping:**
-// │     └── If unable to schedule U, return false to backtrack to previous unit
+// │     └── If unable to schedule the selected unit, return false to backtrack to the previous unit
 // │
 // └── **If No Units Can Be Scheduled Without Conflict:**
 //       └── Return false (schedule not possible)
-
 
 
 

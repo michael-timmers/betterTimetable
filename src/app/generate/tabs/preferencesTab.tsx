@@ -1,36 +1,28 @@
+// preferences.tsx
+
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
+import { TimetableViewProps } from "../algorithms/interfaces";
 
-// Define the structure for user preferences data
-interface PreferencesData {
-  studyTimes: { [key: string]: string[] }; // Selected study times for each day
-}
-
-// Define the props for the Preferences component
-interface PreferencesProps {
-  preferences: PreferencesData;
-  setPreferences: React.Dispatch<React.SetStateAction<PreferencesData>>;
-  setTab: React.Dispatch<React.SetStateAction<"units" | "preferences" | "timetable">>;
-}
-
-const Preferences: React.FC<PreferencesProps> = ({
+const Preferences: React.FC<TimetableViewProps> = ({
   preferences,
   setPreferences,
   setTab,
+  // You can omit `courseList` and `unitColors` if they are not used in this component
 }) => {
   const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
   // Generate times from 8:00 AM to 8:30 PM in 30-minute intervals (26 slots)
   const times = Array.from({ length: 26 }, (_, i) => {
-    const totalMinutes = 8 * 60 + i * 30; // Start at 8:00 AM, increment by 30 minutes
+    const totalMinutes = 8 * 60 + i * 30; // Start at 8:00 AM
     const hour24 = Math.floor(totalMinutes / 60);
     const minute = totalMinutes % 60;
     const hour12 = hour24 % 12 === 0 ? 12 : hour24 % 12;
     const period = hour24 >= 12 ? "PM" : "AM";
     const minuteStr = minute === 0 ? "00" : "30";
-    const timeLabel = minute === 0 ? `${hour12} ${period}` : ""; // Only label on the hour
-    const timeValue = `${hour24}:${minuteStr}`; // For internal tracking (e.g., "8:00", "8:30")
+    const timeLabel = minute === 0 ? `${hour12} ${period}` : ""; // Label on the hour
+    const timeValue = `${hour24}:${minuteStr}`; // Internal value
 
     return {
       label: timeLabel,
@@ -38,55 +30,83 @@ const Preferences: React.FC<PreferencesProps> = ({
     };
   });
 
-  // Initialize studyTimes state with preferences.studyTimes or empty object
-  const [studyTimes, setStudyTimes] = useState<{ [key: string]: string[] }>(
-    preferences.studyTimes || {}
-  );
-
   // Function to handle selection of a study time slot
   const handleTimeSelection = (day: string, timeValue: string) => {
-    setStudyTimes((prev) => {
-      const updatedTimes = { ...prev };
-      if (!updatedTimes[day]) {
-        updatedTimes[day] = [];
+    setPreferences((prevPreferences) => {
+      const updatedStudyTimes = { ...prevPreferences.studyTimes };
+  
+      // Check if the day already exists in studyTimes
+      if (!updatedStudyTimes[day]) {
+        updatedStudyTimes[day] = [];
       }
-
+  
       // Toggle selection of the time slot
-      if (updatedTimes[day].includes(timeValue)) {
-        updatedTimes[day] = updatedTimes[day].filter((t) => t !== timeValue); // Deselect if already selected
+      if (updatedStudyTimes[day].includes(timeValue)) {
+        updatedStudyTimes[day] = updatedStudyTimes[day].filter((t) => t !== timeValue);
+  
+        // If no times remain for the day, delete the day from studyTimes
+        if (updatedStudyTimes[day].length === 0) {
+          delete updatedStudyTimes[day];
+        }
       } else {
-        updatedTimes[day] = [...updatedTimes[day], timeValue]; // Select the time slot
+        updatedStudyTimes[day] = [...updatedStudyTimes[day], timeValue];
       }
-
-      // Sort the times for the day from earliest to latest (considering minutes)
-      updatedTimes[day].sort((a, b) => {
-        const [hourA, minuteA] = a.split(":").map(Number);
-        const [hourB, minuteB] = b.split(":").map(Number);
-        const totalMinutesA = hourA * 60 + (minuteA || 0);
-        const totalMinutesB = hourB * 60 + (minuteB || 0);
-        return totalMinutesA - totalMinutesB;
-      });
-
-      return updatedTimes;
+  
+      // Only sort the array if it exists and is not empty
+      if (updatedStudyTimes[day] && updatedStudyTimes[day].length > 0) {
+        updatedStudyTimes[day].sort((a, b) => {
+          const [hourA, minuteA] = a.split(":").map(Number);
+          const [hourB, minuteB] = b.split(":").map(Number);
+          const totalMinutesA = hourA * 60 + minuteA;
+          const totalMinutesB = hourB * 60 + minuteB;
+          return totalMinutesA - totalMinutesB;
+        });
+      }
+  
+      // Return the updated preferences
+      return { ...prevPreferences, studyTimes: updatedStudyTimes };
     });
   };
+  
 
-  // Function to handle saving the preferences and navigating to the timetable tab
-  const handleSavePreferences = () => {
-    setPreferences((prev) => ({
-      ...prev,
-      studyTimes, // Save the selected study times
-    }));
-    setTab("timetable"); // Navigate to the timetable tab
-  };
+  // Determine if at least one timeslot is selected
+  const hasSelectedTimeslots = Object.values(preferences.studyTimes).some(
+    (times) => times.length > 0
+  );
 
   return (
     <>
-      {/* Page Title */}
-      <h2 className="text-3xl mb-4 text-white">Set Your Study Preferences</h2>
+      {/* Navigation and Title */}
+      <div className="mt-6 flex items-center justify-between w-full">
+        {/* Back Button */}
+        <button
+          onClick={() => setTab("units")}
+          className="px-6 py-2 text-white rounded-full bg-blue-600 hover:bg-blue-700"
+        >
+          Back
+        </button>
 
-      {/* Graph-like UI for Day and Time Selection */}
-      <div className="w-full overflow-x-auto">
+        {/* Page Title */}
+        <h2 className="text-3xl text-white text-center flex-grow">
+          Set Your Study Preferences
+        </h2>
+
+        {/* Next Button */}
+        <button
+          onClick={() => setTab("timetable")}
+          className={`px-6 py-2 text-white rounded-full ${
+            hasSelectedTimeslots
+              ? "bg-blue-600 hover:bg-blue-700 cursor-pointer"
+              : "bg-gray-500 cursor-not-allowed"
+          }`}
+          disabled={!hasSelectedTimeslots}
+        >
+          Next
+        </button>
+      </div>
+
+      {/* Time Selection Grid */}
+      <div className="w-full overflow-x-auto mt-6">
         <div className="grid grid-cols-[0.5fr_repeat(5,1fr)] gap-0.5">
           {/* Empty top-left corner */}
           <div className="bg-gray-900 p-2"></div>
@@ -102,12 +122,12 @@ const Preferences: React.FC<PreferencesProps> = ({
           ))}
 
           {/* Time Rows */}
-          {times.map(({ label, value }, index) => (
+          {times.map(({ label, value }) => (
             <React.Fragment key={value}>
               {/* Time Label */}
               <div
-                className={`bg-gray-900 text-white text-center flex items-center justify-center`}
-                style={{ height: "30px" }} // Equal height for all time rows (adjust as needed)
+                className="bg-gray-900 text-white text-center flex items-center justify-center"
+                style={{ height: "30px" }}
               >
                 {label}
               </div>
@@ -117,37 +137,17 @@ const Preferences: React.FC<PreferencesProps> = ({
                 <div
                   key={`${day}-${value}`}
                   className={`p-2 cursor-pointer ${
-                    studyTimes[day]?.includes(value)
+                    preferences.studyTimes[day]?.includes(value)
                       ? "bg-blue-600" // Highlight selected time slots
                       : "bg-gray-700 hover:bg-gray-600" // Default and hover styles
                   }`}
-                  style={{ height: "30px" }} // Match the height of the time label rows
+                  style={{ height: "30px" }}
                   onClick={() => handleTimeSelection(day, value)}
                 ></div>
               ))}
             </React.Fragment>
           ))}
-
         </div>
-      </div>
-
-      {/* Navigation buttons */}
-      <div className="mt-6 flex space-x-4">
-        {/* Back Button to return to the Units tab */}
-        <button
-          onClick={() => setTab("units")}
-          className="px-6 py-2 text-white rounded-full bg-blue-600 hover:bg-blue-700"
-        >
-          Back
-        </button>
-
-        {/* Next Button to save preferences and proceed to the Timetable tab */}
-        <button
-          onClick={handleSavePreferences}
-          className="px-6 py-2 text-white rounded-full bg-blue-600 hover:bg-blue-700"
-        >
-          Next
-        </button>
       </div>
     </>
   );

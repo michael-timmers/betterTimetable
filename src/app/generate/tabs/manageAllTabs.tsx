@@ -1,46 +1,19 @@
+// manageTabs.tsx
+
 "use client";
 
 import { useState } from "react";
 import Units from "./unitsTab";
 import Preferences from "./preferencesTab";
 import TimetableView from "./timetableTab";
-import { PreferencesData } from '../algorithms/interfaces'
-
-// Define the structure for a Course
-interface Course {
-  id: string;
-  unitCode: string;     // Code of the unit/course (e.g., "CAB202")
-  unitName: string;     // Full name of the unit
-  classType: string;    // Type of class (e.g., "Lecture", "Tutorial")
-  activity: string;     // Specific activity (e.g., "LEC", "TUT")
-  day: string;          // Day of the week (e.g., "MON", "TUE")
-  time: string;         // Time slot (e.g., "9AM - 11AM")
-  room: string;         // Room location
-  teachingStaff: string;// Instructor's name
-}
-
-// Define the structure for CourseData, which includes the unit name and its courses
-interface CourseData {
-  unitName: string;     // Full name of the unit
-  courses: Course[];    // List of courses under this unit
-}
-
+import { UnitData, PreferencesData } from '../algorithms/interfaces';
 
 // Main component that manages the application tabs and state
 export default function ManageTabs() {
 
-  // State to store the list of courses added by the user
-  const [courseList, setCourseList] = useState<{ [key: string]: CourseData }>({});
-
-  // State to store user preferences
-  const [preferences, setPreferences] = useState<PreferencesData>({
-    studyTimes: {},  // Initially empty
-  });
-
-  // State to manage the currently active tab ("units", "preferences", or "timetable")
+  const [courseList, setCourseList] = useState<{ [key: string]: UnitData }>({});
+  const [preferences, setPreferences] = useState<PreferencesData>({ studyTimes: {} });
   const [tab, setTab] = useState<"units" | "preferences" | "timetable">("units");
-
-  // State to handle error messages
   const [error, setError] = useState<string | null>(null);
 
   // Define a color palette to assign colors to units dynamically
@@ -90,9 +63,11 @@ export default function ManageTabs() {
       {/* Render the Preferences component when on the "preferences" tab */}
       {tab === "preferences" && (
         <Preferences
-          preferences={preferences}      // Pass the entire preferences object
-          setPreferences={setPreferences}
+          courseList={courseList}      // Passed as part of TimetableViewProps
+          preferences={preferences}     // Pass the entire preferences object
+          setPreferences={setPreferences} // Pass the setter function
           setTab={setTab}
+          unitColors={unitColors}       // Passed as part of TimetableViewProps
         />
       )}
 
@@ -100,7 +75,7 @@ export default function ManageTabs() {
       {tab === "timetable" && (
         <TimetableView
           courseList={courseList}
-          preferences={preferences}     // Pass the entire preferences object
+          preferences={preferences}
           setTab={setTab}
           unitColors={unitColors}
         />

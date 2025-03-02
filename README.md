@@ -32,25 +32,13 @@ The BetterTimetable project, developed for Code Network using **NextJS (TypsScri
 
 > https://git-scm.com/downloads
 
-
-<br>
-
 2. Install GitHub Desktop
-   
 > https://desktop.github.com/?ref_cta=download+desktop&ref_loc=installing+github+desktop&ref_page=docs
 
-<br>
-
-
 3. Install Visual Studio Code
-
 > https://code.visualstudio.com/download
 
-<br>
-
-
 4. Install mySQL Workbench
-
 > https://dev.mysql.com/downloads/installer/
 
 > [!IMPORTANT]
@@ -58,8 +46,6 @@ The BetterTimetable project, developed for Code Network using **NextJS (TypsScri
 > - When it asks you for which version, select ‘Full’ version.
 > - DO NOT modify network port during MySQL Setup. Ensure it is set to port 3306. If not, reinstall MySQL
 > - YOU MUST create a root user with a password during installation. Do not lose these details! (But if you do then simply reinstall MySQL)
-
-<br>
 
 5. Install Node
 
@@ -71,27 +57,15 @@ The BetterTimetable project, developed for Code Network using **NextJS (TypsScri
 
 ## 🚀 Setup Project on VS Code (after installing software)
 1. Open GitHub Desktop App
-
-   <br>
-   
 2. Clone the repository
 ```bash
 git clone https://github.com/codenetwork/betterTimetable.git
 ```
-
-<br>
-
 3. Open the project in VS Code
-
-<br>
-
 4. Install necessary dependencies
 ```bash
 npm install
 ```
-
-<br>
-
 5. Duplicate `.env.example` to `.env` and update the `DATABASE_URL` to have your username, password, and port.
 
 <br><br>

@@ -99,26 +99,38 @@ npm install
 
 ## 🚀 Setup mySQL Database (after installing software)
 
-Part 1 – Create the Database Schema
-1. Open MySQL Command Line client by typing in ‘MySQL 8.0 Command Line Client’ to
-Windows Searchbar
-2. If you click to open the Command Line client, then you will need to insert the password
-you created earlier when setting up MySQL Workbench
-3. Type the following commands and press enter
-```bash
-CREATE USER 'BetterTimetable'@'localhost' IDENTIFIED BY
-'BetterTimetable1';
-GRANT ALL PRIVILEGES ON * . * TO 'BetterTimetable'@'localhost';
-FLUSH PRIVILEGES;
-CREATE DATABASE betterTimetable;
-```
+Drizzle ORM doesn't automatically create the database for you. You'll need to create the betterTimetable database manually before proceeding. Here's how you can do it:
 
-<br>
+1. Create the Database Manually:
+   - Connect to your MySQL server using a MySQL client. Do so via MySQL Command Line Editor
+   - Run the following SQL command:
+     ```bash	
+      CREATE DATABASE betterTimetable;
+		```
+2. Update Your .env File:
+   - Ensure your .env file has the correct DATABASE_URL pointing to the betterTimetable database:
+			<br>
+     ```bash	
+        DATABASE_URL="mysql://user:password@localhost:3306/betterTimetable"
+      ```
+		Replace user and password with your MySQL credentials.
 
-Part 2 – Populate the Database Schema
-1. Open the front-end repository with Visual Studio Code
-2. Run command “npm install” in the terminal
-
+3. Generate and Apply Migrations:
+   - Use Drizzle Kit to generate and apply migrations:
+     ```bash
+        npx drizzle-kit generate
+        npx drizzle-kit migrate
+	    ```
+     Alternatively, you can also try:
+      ```bash
+      npx drizzle-kit push
+       ```
+5. Seed the Database:
+    - Run your seed script to populate the database with initial data: <br>
+	  ```bash
+      node seed.ts
+	  ```	
+	
 <br><br>
 
 ## 🖥️ Usage

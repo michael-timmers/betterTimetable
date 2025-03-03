@@ -43,7 +43,8 @@ The BetterTimetable project, developed for Code Network using **NextJS (TypsScri
 
 > [!IMPORTANT]
 > Important Notes for MySQL Setup:
-> - When it asks you for which version, select ‘Full’ version.
+> - When it asks you for which option, select the first (though either should be ok).
+> - When it asks you for which version, select ‘Full’ version. This way you can install WorkBench and the MySQL Command Line Client
 > - DO NOT modify network port during MySQL Setup. Ensure it is set to port 3306. If not, reinstall MySQL
 > - YOU MUST create a root user with a password during installation. Do not lose these details! (But if you do then simply reinstall MySQL)
 
@@ -135,7 +136,7 @@ Drizzle ORM doesn't automatically create the database for you. You'll need to cr
 5. Seed the Database:
     - Run your seed script to populate the database with initial data: <br>
 	  ```bash
-      node seed.ts
+	     npx tsx seed.ts
 	  ```	
 	
 <br><br>

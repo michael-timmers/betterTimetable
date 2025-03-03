@@ -70,6 +70,39 @@ npm install
 
 <br><br>
 
+### Using GitHub from the CLI
+If you’re using the command line interface (CLI), follow these steps:
+
+1. Fork the Repository
+First, fork the original repository to your GitHub account.
+
+2. Clone Your Fork
+```bash
+git clone https://github.com/<your-github-username>/betterTimetable.git
+cd betterTimetable
+```
+3. Push Your Changes
+After making changes, commit and push them to your forked repository:
+
+```bash
+git add .
+git commit -m "Your commit message"
+git push origin <your-branch-name>
+```
+4. Create a Pull Request (PR)
+Go to your forked repository on GitHub.
+Click "Compare & pull request" and select the correct branches.
+Click "Create pull request" to submit your changes.
+
+**Common Error: Pushing Directly to the Original Repository**
+If you try to push without the necessary permissions, you may see:
+
+```bash
+ERROR: Permission to codenetwork/betterTimetable.git denied
+fatal: Could not read from remote repository.
+```
+To fix this, fork the repository and follow the steps above.
+<br><br>
 
 ## 🚀 Setup mySQL Database (after installing software)
 

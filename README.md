@@ -51,7 +51,7 @@ The BetterTimetable project, developed for Code Network using **NextJS (TypsScri
 5. Install Node
 
 > https://nodejs.org/en/download
-
+> - Please note: You will need to restart VS Code after installing for it to take effect
 <br><br>
 
 

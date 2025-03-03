@@ -43,8 +43,8 @@ The BetterTimetable project, developed for Code Network using **NextJS (TypsScri
 
 > [!IMPORTANT]
 > Important Notes for MySQL Setup:
-> - When it asks you for which option, select the first (though either should be ok).
-> - When it asks you for which version, select ‘Full’ version. This way you can install WorkBench and the MySQL Command Line Client
+> - On the mySQL Downloader page, it will ask you for which option for the MSI Installer, select the first (though either should be ok).
+> - Upon downloading the Installer, it asks you to select a version to install, select ‘Full’ version. This way you can install WorkBench and the MySQL Command Line Client
 > - DO NOT modify network port during MySQL Setup. Ensure it is set to port 3306. If not, reinstall MySQL
 > - YOU MUST create a root user with a password during installation. Do not lose these details! (But if you do then simply reinstall MySQL)
 

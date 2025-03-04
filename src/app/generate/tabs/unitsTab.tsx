@@ -47,7 +47,7 @@ const Units: React.FC<UnitsProps> = ({
   const [loading, setLoading] = useState(false);                 // Loading state for asynchronous operations
   const [validPeriods, setValidPeriods] = useState<any[]>([]);   // Valid teaching periods for the entered unit code
   const [showDialog, setShowDialog] = useState(false);           // Controls the visibility of the teaching period selection dialog
-  
+
   // useEffect to fetch the available teaching periods when the component mounts
   useEffect(() => {
     const fetchTeachingPeriods = async () => {
@@ -128,7 +128,7 @@ const Units: React.FC<UnitsProps> = ({
         const response = await fetch(
           `/api/course-data?unitCode=${formattedUnitCode}&teachingPeriod=${selectedPeriod}`
         );
-        
+
         const data = await response.json();
         const unitData = data[formattedUnitCode];                // Extract unit data
 
@@ -175,11 +175,10 @@ const Units: React.FC<UnitsProps> = ({
               setTab("preferences");                              // Navigate to Preferences tab
             }
           }}
-          className={`ml-auto px-6 py-2 text-white rounded-full ${
-            Object.keys(courseList).length === 0
-              ? "bg-gray-600 cursor-not-allowed"
-              : "bg-blue-1000 hover:bg-blue-1100"
-          }`}
+          className={`ml-auto px-6 py-2 text-white rounded-full ${Object.keys(courseList).length === 0
+            ? "bg-gray-600 cursor-not-allowed"
+            : "bg-blue-1000 hover:bg-blue-1100"
+            }`}
           disabled={Object.keys(courseList).length === 0}         // Disable if no units added
         >
           Next

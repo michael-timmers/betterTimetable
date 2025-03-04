@@ -176,8 +176,8 @@ const Units: React.FC<UnitsProps> = ({
             }
           }}
           className={`ml-auto px-6 py-2 text-white rounded-full ${Object.keys(courseList).length === 0
-              ? "bg-gray-600 cursor-not-allowed"
-              : "bg-blue-1000 hover:bg-blue-1100"
+            ? "bg-gray-600 cursor-not-allowed"
+            : "bg-blue-1000 hover:bg-blue-1100"
             }`}
           disabled={Object.keys(courseList).length === 0}         // Disable if no units added
         >

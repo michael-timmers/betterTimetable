@@ -1,6 +1,6 @@
 // This file is crucial for formatting the drizzle schema
 
-import { mysqlTable, mysqlSchema, varchar, boolean, text, int, timestamp, primaryKey } from "drizzle-orm/mysql-core";
+import { mysqlTable, mysqlSchema, varchar, boolean, text, int, timestamp, time, primaryKey } from "drizzle-orm/mysql-core";
 import { sql } from "drizzle-orm";
 
 //Schema overview
@@ -8,7 +8,7 @@ import { sql } from "drizzle-orm";
 //userPwdResets(_id#, userId#, code, expiresAt)
 //sessions(_id#, userId#, expiresAt)
 //units(_id#, unitCode, unitName)
-//teachingPeriods(_id#, name)
+//teachingPeriods(_id#, periodName)
 //classes(_id#, unitId#, periodId#, classTyhpe, activity, day, time, room, teachingStaff)
 //userClasses(userId#, classId#)
 
@@ -37,4 +37,36 @@ export const sessions = mysqlTable("sessions", {
   id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
   userId: varchar("userId", { length: 36 }).notNull(),
   expiresAt: timestamp("expiresAt").notNull(),
+});
+
+//units table
+export const units = mysqlTable("units", {
+  id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
+  unitCode: varchar("unitCode", { length: 255 }).unique(),
+  unitName: varchar("unitName", { length: 255 })
+});
+
+//teachingPeriods table
+export const teachingPeriods = mysqlTable("teachingPeriods", {
+  id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
+  periodName: varchar("periodName", { length: 255 })
+});
+
+//classes table
+export const classes = mysqlTable("classes", {
+  id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
+  unitId: varchar("unitId", { length: 36 }).notNull().references(() => units.id),
+  periodId: varchar("periodId", { length: 36 }).notNull().references(() => teachingPeriods.id),
+  classType: varchar("classType", { length: 255 }),
+  activity: varchar("activity", { length: 255 }),
+  day: varchar("day", { length: 255 }),
+  classTime: time("classTime"),
+  room: varchar("room", { length: 255 }),
+  teachingStaff: varchar("teachingStaff", { length: 255 })
+});
+
+//userClasses table
+export const userClasses = mysqlTable("userClasses", {
+  userId: varchar("userId", { length: 36 }).notNull().references(() => users.id),
+  classId: varchar("classId", { length: 36 }).notNull().references(() => classes.id)
 });

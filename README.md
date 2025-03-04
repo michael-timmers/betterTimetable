@@ -4,6 +4,10 @@
 
 The BetterTimetable project, developed for Code Network using **NextJS (TypsScript)**, enhances students' experience by creating a user-friendly timetable. It integrates React elements for effective data display and uses server components to process QUT course data into an organized API, which populates timetables based on student preferences.
 
+  <br>
+
+Please join our Discord Server at: [betterTimetable Discord](https://discord.gg/VnX3rcMDNA)
+
 <br>
 
 ## 📌 Features

@@ -18,7 +18,7 @@ const db = drizzle(pool);
 async function main() {
   try {
     console.log("Seeding database...");
-    
+
     // Hash passwords
     const hashedPassword1 = await bcrypt.hash("123", SALT_ROUNDS);
     const hashedPassword2 = await bcrypt.hash("456", SALT_ROUNDS);

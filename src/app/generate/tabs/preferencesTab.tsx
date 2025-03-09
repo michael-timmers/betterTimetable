@@ -1,15 +1,12 @@
-// preferences.tsx
-
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { TimetableViewProps } from "../algorithms/interfaces";
 
 const Preferences: React.FC<TimetableViewProps> = ({
   preferences,
   setPreferences,
   setTab,
-  // You can omit `courseList` and `unitColors` if they are not used in this component
 }) => {
   const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
@@ -30,44 +27,124 @@ const Preferences: React.FC<TimetableViewProps> = ({
     };
   });
 
-  // Function to handle selection of a study time slot
-  const handleTimeSelection = (day: string, timeValue: string) => {
+  // State variables for drag selection
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragAction, setDragAction] = useState<"select" | "deselect" | null>(null);
+  const [draggedTimeslots, setDraggedTimeslots] = useState<{ [day: string]: Set<string> }>({});
+
+  // Event handlers
+  const handleMouseDown = (
+    e: React.MouseEvent<HTMLDivElement>,
+    day: string,
+    timeValue: string
+  ) => {
+    e.preventDefault();
+    setIsDragging(true);
+
+    const isSelected = preferences.studyTimes[day]?.includes(timeValue) ?? false;
+    const action = isSelected ? "deselect" : "select";
+    setDragAction(action);
+
+    setDraggedTimeslots({
+      [day]: new Set([timeValue]),
+    });
+  };
+
+  const handleMouseEnter = (day: string, timeValue: string) => {
+    if (isDragging && dragAction) {
+      setDraggedTimeslots((prev) => {
+        const updated = { ...prev };
+        if (!updated[day]) {
+          updated[day] = new Set();
+        }
+        updated[day].add(timeValue);
+        return updated;
+      });
+    }
+  };
+
+  const handleMouseUp = () => {
+    if (isDragging && dragAction) {
+      updateStudyTimes();
+    }
+    resetDragState();
+  };
+
+  const handleTouchStart = (
+    e: React.TouchEvent<HTMLDivElement>,
+    day: string,
+    timeValue: string
+  ) => {
+    e.preventDefault();
+    setIsDragging(true);
+
+    const isSelected = preferences.studyTimes[day]?.includes(timeValue) ?? false;
+    const action = isSelected ? "deselect" : "select";
+    setDragAction(action);
+
+    setDraggedTimeslots({
+      [day]: new Set([timeValue]),
+    });
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (isDragging && dragAction) {
+      const touch = e.touches[0];
+      const target = document.elementFromPoint(touch.clientX, touch.clientY);
+      if (target) {
+        const timeslotElement = target.closest("[data-day][data-time]");
+        if (timeslotElement) {
+          const day = timeslotElement.getAttribute("data-day")!;
+          const timeValue = timeslotElement.getAttribute("data-time")!;
+
+          setDraggedTimeslots((prev) => {
+            const updated = { ...prev };
+            if (!updated[day]) {
+              updated[day] = new Set();
+            }
+            updated[day].add(timeValue);
+            return updated;
+          });
+        }
+      }
+    }
+  };
+
+  const updateStudyTimes = () => {
     setPreferences((prevPreferences) => {
       const updatedStudyTimes = { ...prevPreferences.studyTimes };
-  
-      // Check if the day already exists in studyTimes
-      if (!updatedStudyTimes[day]) {
-        updatedStudyTimes[day] = [];
-      }
-  
-      // Toggle selection of the time slot
-      if (updatedStudyTimes[day].includes(timeValue)) {
-        updatedStudyTimes[day] = updatedStudyTimes[day].filter((t) => t !== timeValue);
-  
-        // If no times remain for the day, delete the day from studyTimes
-        if (updatedStudyTimes[day].length === 0) {
+
+      Object.entries(draggedTimeslots).forEach(([day, times]) => {
+        const dayTimes = new Set(updatedStudyTimes[day] || []);
+
+        times.forEach((time) => {
+          if (dragAction === "select") {
+            dayTimes.add(time);
+          } else if (dragAction === "deselect") {
+            dayTimes.delete(time);
+          }
+        });
+
+        if (dayTimes.size > 0) {
+          updatedStudyTimes[day] = Array.from(dayTimes).sort((a, b) => {
+            const [hourA, minuteA] = a.split(":").map(Number);
+            const [hourB, minuteB] = b.split(":").map(Number);
+            return hourA * 60 + minuteA - (hourB * 60 + minuteB);
+          });
+        } else {
           delete updatedStudyTimes[day];
         }
-      } else {
-        updatedStudyTimes[day] = [...updatedStudyTimes[day], timeValue];
-      }
-  
-      // Only sort the array if it exists and is not empty
-      if (updatedStudyTimes[day] && updatedStudyTimes[day].length > 0) {
-        updatedStudyTimes[day].sort((a, b) => {
-          const [hourA, minuteA] = a.split(":").map(Number);
-          const [hourB, minuteB] = b.split(":").map(Number);
-          const totalMinutesA = hourA * 60 + minuteA;
-          const totalMinutesB = hourB * 60 + minuteB;
-          return totalMinutesA - totalMinutesB;
-        });
-      }
-  
-      // Return the updated preferences
+      });
+
       return { ...prevPreferences, studyTimes: updatedStudyTimes };
     });
   };
-  
+
+  const resetDragState = () => {
+    setIsDragging(false);
+    setDragAction(null);
+    setDraggedTimeslots({});
+  };
 
   // Determine if at least one timeslot is selected
   const hasSelectedTimeslots = Object.values(preferences.studyTimes).some(
@@ -115,7 +192,7 @@ const Preferences: React.FC<TimetableViewProps> = ({
           {daysOfWeek.map((day) => (
             <div
               key={day}
-              className="bg-gray-900 p-4 text-white text-center font-semibold"
+              className="bg-gray-900 p-2 text-white text-center font-semibold"
             >
               {day}
             </div>
@@ -127,7 +204,7 @@ const Preferences: React.FC<TimetableViewProps> = ({
               {/* Time Label */}
               <div
                 className="bg-gray-900 text-white text-center flex items-center justify-center"
-                style={{ height: "30px" }}
+                style={{ height: "20px" }}
               >
                 {label}
               </div>
@@ -136,13 +213,21 @@ const Preferences: React.FC<TimetableViewProps> = ({
               {daysOfWeek.map((day) => (
                 <div
                   key={`${day}-${value}`}
+                  data-day={day}
+                  data-time={value}
                   className={`p-2 cursor-pointer ${
-                    preferences.studyTimes[day]?.includes(value)
-                      ? "bg-blue-600" // Highlight selected time slots
-                      : "bg-gray-700 hover:bg-gray-600" // Default and hover styles
+                    preferences.studyTimes[day]?.includes(value) ||
+                    draggedTimeslots[day]?.has(value)
+                      ? "bg-blue-600"
+                      : "bg-gray-700 hover:bg-gray-600"
                   }`}
-                  style={{ height: "30px" }}
-                  onClick={() => handleTimeSelection(day, value)}
+                  style={{ height: "20px" }}
+                  onMouseDown={(e) => handleMouseDown(e, day, value)}
+                  onMouseEnter={() => handleMouseEnter(day, value)}
+                  onMouseUp={handleMouseUp}
+                  onTouchStart={(e) => handleTouchStart(e, day, value)}
+                  onTouchMove={(e) => handleTouchMove(e)}
+                  onTouchEnd={handleMouseUp}
                 ></div>
               ))}
             </React.Fragment>

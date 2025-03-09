@@ -4,6 +4,10 @@
 
 The BetterTimetable project, developed for Code Network using **NextJS (TypsScript)**, enhances students' experience by creating a user-friendly timetable. It integrates React elements for effective data display and uses server components to process QUT course data into an organized API, which populates timetables based on student preferences.
 
+  <br>
+
+Please join our Discord Server at: [betterTimetable Discord](https://discord.gg/VnX3rcMDNA)
+
 <br>
 
 ## 📌 Features
@@ -32,93 +36,113 @@ The BetterTimetable project, developed for Code Network using **NextJS (TypsScri
 
 > https://git-scm.com/downloads
 
-
-<br>
-
 2. Install GitHub Desktop
-   
 > https://desktop.github.com/?ref_cta=download+desktop&ref_loc=installing+github+desktop&ref_page=docs
 
-<br>
-
-
 3. Install Visual Studio Code
-
 > https://code.visualstudio.com/download
 
-<br>
-
-
 4. Install mySQL Workbench
-
 > https://dev.mysql.com/downloads/installer/
 
 > [!IMPORTANT]
 > Important Notes for MySQL Setup:
-> - When it asks you for which version, select ‘Full’ version.
+> - On the mySQL Downloader page, it will ask you for which option for the MSI Installer, select the first (though either should be ok).
+> - Upon downloading the Installation Wizard, it asks you to select a version of MySQL to have on your computer, select ‘Full’ version. This way you can install WorkBench and the MySQL Command Line Client
 > - DO NOT modify network port during MySQL Setup. Ensure it is set to port 3306. If not, reinstall MySQL
 > - YOU MUST create a root user with a password during installation. Do not lose these details! (But if you do then simply reinstall MySQL)
-
-<br>
 
 5. Install Node
 
 > https://nodejs.org/en/download
-
+> - Please note: You will need to restart VS Code after installing for it to take effect
 <br><br>
 
 
 
 ## 🚀 Setup Project on VS Code (after installing software)
 1. Open GitHub Desktop App
-
-   <br>
-   
 2. Clone the repository
 ```bash
 git clone https://github.com/codenetwork/betterTimetable.git
 ```
-
-<br>
-
 3. Open the project in VS Code
-
-<br>
-
 4. Install necessary dependencies
 ```bash
 npm install
 ```
-
-<br>
-
 5. Duplicate `.env.example` to `.env` and update the `DATABASE_URL` to have your username, password, and port.
 
 <br><br>
 
+### Using GitHub from the CLI
+If you’re using the command line interface (CLI), follow these steps:
+
+1. Fork the Repository <br>
+First, fork the original repository to your GitHub account.
+
+2. Clone Your Fork <br>
+```bash
+git clone https://github.com/<your-github-username>/betterTimetable.git
+cd betterTimetable
+```
+3. Push Your Changes <br>
+After making changes, commit and push them to your forked repository:
+
+```bash
+git add .
+git commit -m "Your commit message"
+git push origin <your-branch-name>
+```
+4. Create a Pull Request (PR)<br>
+Go to your forked repository on GitHub.<br>
+Click "Compare & pull request" and select the correct branches.<br>
+Click "Create pull request" to submit your changes.<br>
+
+**Common Error: Pushing Directly to the Original Repository**<br>
+If you try to push without this process, you may see:
+
+```bash
+ERROR: Permission to codenetwork/betterTimetable.git denied
+fatal: Could not read from remote repository.
+```
+To fix this, fork the repository and follow the steps above.
+<br><br>
 
 ## 🚀 Setup mySQL Database (after installing software)
 
-Part 1 – Create the Database Schema
-1. Open MySQL Command Line client by typing in ‘MySQL 8.0 Command Line Client’ to
-Windows Searchbar
-2. If you click to open the Command Line client, then you will need to insert the password
-you created earlier when setting up MySQL Workbench
-3. Type the following commands and press enter
-```bash
-CREATE USER 'BetterTimetable'@'localhost' IDENTIFIED BY
-'BetterTimetable1';
-GRANT ALL PRIVILEGES ON * . * TO 'BetterTimetable'@'localhost';
-FLUSH PRIVILEGES;
-CREATE DATABASE betterTimetable;
-```
+Drizzle ORM doesn't automatically create the database for you. You'll need to create the betterTimetable database manually before proceeding. Here's how you can do it:
 
-<br>
+1. Create the Database Manually:
+   - Connect to your MySQL server using a MySQL client. Do so via MySQL Command Line Editor
+   - Run the following SQL command:
+     ```bash	
+      CREATE DATABASE betterTimetable;
+		```
+2. Update Your .env File:
+   - Ensure your .env file has the correct DATABASE_URL pointing to the betterTimetable database:
+			<br>
+     ```bash	
+        DATABASE_URL="mysql://user:password@localhost:3306/betterTimetable"
+      ```
+		Replace user and password with your MySQL credentials.
 
-Part 2 – Populate the Database Schema
-1. Open the front-end repository with Visual Studio Code
-2. Run command “npm install” in the terminal
-
+3. Generate and Apply Migrations:
+   - Use Drizzle Kit to generate and apply migrations:
+     ```bash
+        npx drizzle-kit generate
+        npx drizzle-kit migrate
+	    ```
+     Alternatively, you can also try:
+      ```bash
+      npx drizzle-kit push
+       ```
+5. Seed the Database:
+    - Run your seed script to populate the database with initial data: <br>
+	  ```bash
+	     npx tsx seed.ts
+	  ```	
+	
 <br><br>
 
 ## 🖥️ Usage

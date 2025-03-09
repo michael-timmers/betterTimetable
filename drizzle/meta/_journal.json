@@ -15,6 +15,13 @@
       "when": 1738484947759,
       "tag": "0001_pale_ender_wiggin",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1741062034485,
+      "tag": "0002_exotic_thunderbird",
+      "breakpoints": true
     }
   ]
 }

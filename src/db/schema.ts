@@ -1,7 +1,16 @@
 // This file is crucial for formatting the drizzle schema
 
-import { mysqlTable, mysqlSchema, varchar, boolean, text, int, timestamp, primaryKey } from "drizzle-orm/mysql-core";
+import { mysqlTable, mysqlSchema, varchar, boolean, text, int, timestamp, time, primaryKey } from "drizzle-orm/mysql-core";
 import { sql } from "drizzle-orm";
+
+//Schema overview
+//users(_id#, _userName, title, firstName, lastName, email, admin)
+//userPwdResets(_id#, userId#, code, expiresAt)
+//sessions(_id#, userId#, expiresAt)
+//units(_id#, unitCode, unitName)
+//teachingPeriods(_id#, periodName)
+//classes(_id#, unitId#, periodId#, classTyhpe, activity, day, time, room, teachingStaff)
+//userClasses(userId#, classId#)
 
 // Users Table
 export const users = mysqlTable("users", {
@@ -45,5 +54,5 @@ export const courses = mysqlTable("courses", {
   day: varchar("day", { length: 10 }).notNull(),
   time: varchar("time", { length: 50 }).notNull(),
   room: varchar("room", { length: 50 }).notNull(),
-  teachingStaff: varchar("teachingStaff", { length: 255 }).notNull(),
+  teachingStaff: varchar("teachingStaff", { length: 255 }).notNull()
 });

@@ -1,6 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { preconnect } from "react-dom";
+import checkUnit from "./checkUnits";
+import uploadUnit from "./uploadUnit";
+import downloadUnit from "./downloadUnits";
+import { courses } from "@/db/schema";
 
 // Define the structure for an individual course
 interface Course {
@@ -88,12 +93,15 @@ const Units: React.FC<UnitsProps> = ({
       const formattedUnitCode = unitCode.toUpperCase();          // Format unit code to uppercase for consistency
       let validResults = [];
 
+    
+
       // Iterate over available teaching periods to find valid ones for the unit code
       for (let period of teachingPeriods) {
         const response = await fetch(
           `/api/course-data?unitCode=${formattedUnitCode}&teachingPeriod=${period.value}`
         );
-
+        console.log("API Call -", response.url);
+        console.log(response);
         const data = await response.json();
 
         if (Object.keys(data).length === 0) {
@@ -119,28 +127,63 @@ const Units: React.FC<UnitsProps> = ({
     }
   };
 
-  // Function to handle adding the unit to the course list after selecting a period
-  const handleAddUnit = async () => {
+   // Function to handle adding the unit to the course list after selecting a period
+   const handleAddUnit = async () => {
     if (selectedPeriod) {
       const formattedUnitCode = unitCode.toUpperCase();          // Ensure unit code is uppercase
 
+      // Fetch course data for the selected unit and period from the API
       try {
-        const response = await fetch(
-          `/api/course-data?unitCode=${formattedUnitCode}&teachingPeriod=${selectedPeriod}`
-        );
-        
-        const data = await response.json();
-        const unitData = data[formattedUnitCode];                // Extract unit data
+        // Check if the unit exists in the database
+        const dbResponse = await checkUnit(formattedUnitCode);
+        if (dbResponse.exists) {
+         
+          // Fetch course data from database
+          const courseResponse = await downloadUnit(formattedUnitCode);
 
-        // Update the course list with the new unit data
-        setCourseList((prevCourses) => ({
-          ...prevCourses,
-          [formattedUnitCode]: unitData,
-        }));
+          if(courseResponse.success) {
+            const unitData = {
+              unitName: courseResponse.unitName,
+              courses: courseResponse.courseData,
+            };
+            
+            if (unitData.unitName && unitData.courses) {
+              setCourseList((prevCourses) => ({
+                ...prevCourses,
+                [formattedUnitCode]: unitData as CourseData,
+              }));
+            } else {
+              setError("Invalid unit data received.");
+            }
+          }
+          
+          setShowDialog(false);         // Close the dialog
+          setUnitCode("");              // Reset unit code input
+          setSelectedPeriod("");        // Reset selected period
+        } 
+        else {
+          const response = await fetch(
+            `/api/course-data?unitCode=${formattedUnitCode}&teachingPeriod=${selectedPeriod}`
+          );
+          
+          const data = await response.json();
+          const unitData = data[formattedUnitCode];                // Extract unit data
 
-        setShowDialog(false);         // Close the dialog
-        setUnitCode("");              // Reset unit code input
-        setSelectedPeriod("");        // Reset selected period
+          // Update the course list with the new unit data
+          setCourseList((prevCourses) => ({
+            ...prevCourses,
+            [formattedUnitCode]: unitData,
+          }));
+
+          // Add the new unit data to the SQL database in the background
+          uploadUnit(formattedUnitCode, unitData.courses, unitData.unitName,).catch((error) => {
+            console.error("Failed to add unit to the database:", error);
+          });
+
+          setShowDialog(false);         // Close the dialog
+          setUnitCode("");              // Reset unit code input
+          setSelectedPeriod("");        // Reset selected period
+        }
       } catch {
         setError("Failed to add the unit.");                     // Set error if fetch fails
       }

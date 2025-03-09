@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { preconnect } from "react-dom";
-import checkUnit from "./checkUnits";
-import uploadUnit from "./uploadUnit";
-import downloadUnit from "./downloadUnits";
+import checkUnit from "../download_data/checkUnits";
+import uploadUnit from "../download_data/uploadUnit";
+import downloadUnit from "../download_data/downloadUnits";
 import { courses } from "@/db/schema";
 
 // Define the structure for an individual course

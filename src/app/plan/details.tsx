@@ -1,9 +1,15 @@
 "use client"
+import planData from "./planData"
 
-export default function details() {
+export default async function details() {
+
+    const data = await planData();
+    console.log(data);
+    
     return(
         <>
-            <p> Random Details </p>
+
+            <p> Random Details</p>
         </>
     )
 }

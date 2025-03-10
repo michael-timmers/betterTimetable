@@ -1,10 +1,13 @@
-import Details from "./details"
+// ServerComponent.tsx
+"use server";
 
-export default function page() {
-    return(
-        <div className="min-h-screen w-full items-center px-12 bg-gray-1000 text-white">
-            <h1> Hello World! </h1>
-            <Details />
-        </div>
-    )
+import React from 'react';
+import planData from './planData'; // Adjust the import path accordingly
+import ClientComponent from './details'; // Adjust the import path accordingly
+
+export default async function ServerComponent() {
+    const data = await planData();
+
+    // Render the ClientComponent with the fetched data
+    return <ClientComponent data={data} />;
 }

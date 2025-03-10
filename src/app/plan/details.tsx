@@ -1,15 +1,14 @@
-"use client"
-import planData from "./planData"
+// ClientComponent.tsx
+"use client";
 
-export default async function details() {
+import React from 'react';
 
-    const data = await planData();
+export default function ClientComponent({ data }) {
     console.log(data);
-    
-    return(
-        <>
 
-            <p> Random Details</p>
+    return (
+        <>
+            <p>Random Details</p>
         </>
-    )
+    );
 }

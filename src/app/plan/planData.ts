@@ -1,34 +1,23 @@
 "use server";
 
 import { drizzle } from "drizzle-orm/mysql2";
-import { units } from "../../db/schema";
+import { units, courses } from "../../db/schema";
 import { eq, sql } from "drizzle-orm";
 
 export default async function checkUnits() {
     const db = drizzle(process.env.DATABASE_URL!);
-    const unitCode = "CAB202";
 
-    try {
-        // Check if unit already exists in the database
-        const existingUnitQuery = await db
-        .select()
-        .from(units)
-        .where(eq(units.unitCode, unitCode))
-        .limit(1)
-        .execute();
+     // Fetch classType and activity for the unit
+     const classTimesQuery = await db
+     .select({
+         classType: courses.classType,
+         activity: courses.activity,
+     })
+     .from(courses)
+     .where(eq(courses.unitCode, "CAB202"))
+     .execute();
 
-        const existingUnit = existingUnitQuery[0];
-
-        if (existingUnit) {
-            return { exists: true, unitData: existingUnit };
-        }
-        else {
-            return { exists: false };
-        }
-
-    }  
-    catch (error) {
-        console.error("Error checking unit:", error);
-        return { exists: false , message: "Something went wrong. Please try again"};
-    }
+    console.log(`Class times query result: ${JSON.stringify(classTimesQuery)}`);
+    
+    return(classTimesQuery);
 }

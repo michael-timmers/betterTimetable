@@ -202,69 +202,72 @@ const Units: React.FC<UnitsProps> = ({
   };
 
   return (
-    <>
+    <div className="bg-white border border-blue-1400 w-full min-h-fit ml-2 mr-2 my-4 px-12 rounded-lg">
       {/* Units Tab Content */}
       <div className="mt-12 mb-4 w-full flex items-center relative">
         {/* Page Title */}
-        <h1 className="text-4xl absolute left-1/2 transform -translate-x-1/2">
+        <h1 className="text-4xl absolute left-1/2 transform -translate-x-1/2 text-blue-1300 font-semibold">
           Add your Units
         </h1>
         {/* Next Button to proceed to Preferences tab */}
         <button
           onClick={() => {
             if (Object.keys(courseList).length === 0) {
-              setError("Add Unit to generate timetable");         // Prompt user to add units before proceeding
+              setError("Add Unit to generate timetable"); // Prompt user to add units before proceeding
             } else {
-              setTab("preferences");                              // Navigate to Preferences tab
+              setTab("preferences"); // Navigate to Preferences tab
             }
           }}
-          className={`ml-auto px-6 py-2 text-white rounded-full ${Object.keys(courseList).length === 0
-            ? "bg-gray-600 cursor-not-allowed"
-            : "bg-blue-1000 hover:bg-blue-1100"
-            }`}
-          disabled={Object.keys(courseList).length === 0}         // Disable if no units added
+          className={`ml-auto px-6 py-2 text-white rounded-full ${
+            Object.keys(courseList).length === 0
+              ? "bg-gray-600 cursor-not-allowed"
+              : "bg-blue-1000 hover:bg-blue-1100"
+          }`}
+          disabled={Object.keys(courseList).length === 0} // Disable if no units added
         >
           Next
         </button>
       </div>
-
+  
       {/* Search Feature */}
-      <div className="mt-10 mb-16 flex items-center justify-center space-x-4">
-        {/* Input field for unit code */}
-        <input
-          type="text"
-          className="w-48 px-6 py-2 rounded-lg bg-gray-1200"
-          placeholder="Enter unit code"
-          value={unitCode}
-          onChange={(e) => setUnitCode(e.target.value)}
-        />
-        {/* Search/Add Button */}
-        <button
-          onClick={handleSearch}
-          className="px-6 py-2 bg-blue-1000 text-white hover:bg-blue-1100 rounded-full"
-          disabled={loading}
-        >
-          {loading ? "Searching..." : "Add"}
-        </button>
+      <div className="mt-10 mb-16 flex items-center justify-center">
+        {loading ? (
+          // Show "Searching..." when loading
+          <p className="text-xl text-blue-1000 font-semibold">Searching...</p>
+        ) : (
+          // Show input form and search button when not loading
+          <div className="flex items-center justify-center space-x-4">
+            <input
+              type="text"
+              className="w-48 px-6 py-2 rounded-lg bg-blue-1500 border border-blue-1400 text-blue-1400"
+              placeholder="Enter unit code"
+              value={unitCode}
+              onChange={(e) => setUnitCode(e.target.value)}
+            />
+            <button
+              onClick={handleSearch}
+              className="px-6 py-2 bg-blue-1000 text-white hover:bg-blue-1100 rounded-full"
+              disabled={loading}
+            >
+              Add
+            </button>
+          </div>
+        )}
       </div>
-
+  
       {/* Display Error Message if any */}
       {error && <p className="text-red-500 mb-6">{error}</p>}
-
+  
       {/* Display Added Units */}
-      <div className="flex space-x-4 mb-6 flex-wrap">
-        {/* Iterate over the courseList to display each unit */}
+      <div className="flex items-center justify-center space-x-4 mb-6 flex-wrap">
         {Object.keys(courseList)
           .sort((a, b) => a.localeCompare(b))
           .map((unit) => (
             <div key={unit} className="flex flex-col items-center group">
-              {/* Unit Badge with assigned color */}
               <div
-                className={`relative px-6 py-10 rounded-full flex items-center justify-center text-white ${unitColors[unit]}`}
+                className={`relative px-6 py-10 rounded-full flex items-center justify-center text-white bg-blue-1000`}
               >
                 <span className="text-lg">{unit.toUpperCase()}</span>
-
-                {/* 'X' Button to Remove Unit (visible on hover) */}
                 <span
                   className="absolute bottom-2 text-gray-300 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                   onClick={(e) => {
@@ -278,44 +281,39 @@ const Units: React.FC<UnitsProps> = ({
             </div>
           ))}
       </div>
-
+  
       {/* Dialog for Selecting Teaching Period */}
       {showDialog && (
         <div
           className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
-          onClick={() => setShowDialog(false)} // Close dialog when clicking outside
+          onClick={() => {
+            setShowDialog(false);
+            setLoading(false); // Reset loading when popup is closed
+          }}
         >
           <div
-            className="bg-gray-1100 p-6 rounded-lg relative"
+            className="bg-white border border-blue-1400 p-6 rounded-lg relative"
             onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the dialog
           >
-            {/* Close Dialog Button */}
             <button
               onClick={() => setShowDialog(false)}
               className="absolute top-2 right-2 text-gray-500 hover:text-gray-800"
             >
               ✖
             </button>
-
-            {/* Dialog Title */}
-            <h2 className="text-xl mb-4">Select a Teaching Period</h2>
-
-            {/* Dropdown to Select Teaching Period */}
+            <h2 className="text-xl mb-4 font-semibold text-blue-1300">Select a Teaching Period</h2>
             <select
-              className="mb-4 px-6 py-2 rounded-lg bg-gray-1200 text-white"
+              className="mb-4 px-6 py-2 rounded-lg bg-blue-1500 text-black"
               value={selectedPeriod}
               onChange={(e) => setSelectedPeriod(e.target.value)}
             >
               <option value="">Select period</option>
-              {/* Populate dropdown with valid periods */}
               {validPeriods.map((period: any) => (
                 <option key={period.value} value={period.value}>
                   {period.text}
                 </option>
               ))}
             </select>
-
-            {/* Add Unit Button */}
             <div>
               <button
                 onClick={handleAddUnit}
@@ -327,8 +325,8 @@ const Units: React.FC<UnitsProps> = ({
           </div>
         </div>
       )}
-    </>
-  );
+    </div>
+  );  
 };
 
 export default Units;

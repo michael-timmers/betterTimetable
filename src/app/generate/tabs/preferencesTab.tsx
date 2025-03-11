@@ -164,7 +164,7 @@ const Preferences: React.FC<TimetableViewProps> = ({
         </button>
 
         {/* Page Title */}
-        <h2 className="text-3xl text-white text-center flex-grow">
+        <h2 className="text-3xl text-blue-1300 font-semibold text-center flex-grow">
           Set Your Study Preferences
         </h2>
 
@@ -173,7 +173,7 @@ const Preferences: React.FC<TimetableViewProps> = ({
           onClick={() => setTab("timetable")}
           className={`px-6 py-2 text-white rounded-full ${
             hasSelectedTimeslots
-              ? "bg-blue-600 hover:bg-blue-700 cursor-pointer"
+              ? "bg-blue-1000 hover:bg-blue-700 cursor-pointer"
               : "bg-gray-500 cursor-not-allowed"
           }`}
           disabled={!hasSelectedTimeslots}
@@ -186,13 +186,13 @@ const Preferences: React.FC<TimetableViewProps> = ({
       <div className="w-full overflow-x-auto mt-6">
         <div className="grid grid-cols-[0.5fr_repeat(5,1fr)] gap-0.5">
           {/* Empty top-left corner */}
-          <div className="bg-gray-900 p-2"></div>
+          <div className="bg-blue-1400 p-2"></div>
 
           {/* Day Headers */}
           {daysOfWeek.map((day) => (
             <div
               key={day}
-              className="bg-gray-900 p-2 text-white text-center font-semibold"
+              className="bg-blue-1400 p-2 text-white text-center font-semibold"
             >
               {day}
             </div>
@@ -203,7 +203,7 @@ const Preferences: React.FC<TimetableViewProps> = ({
             <React.Fragment key={value}>
               {/* Time Label */}
               <div
-                className="bg-gray-900 text-white text-center flex items-center justify-center"
+                className="bg-blue-1400 text-white text-center flex items-center justify-center"
                 style={{ height: "20px" }}
               >
                 {label}
@@ -218,8 +218,8 @@ const Preferences: React.FC<TimetableViewProps> = ({
                   className={`p-2 cursor-pointer ${
                     preferences.studyTimes[day]?.includes(value) ||
                     draggedTimeslots[day]?.has(value)
-                      ? "bg-blue-600"
-                      : "bg-gray-700 hover:bg-gray-600"
+                      ? "bg-blue-1000"
+                      : "bg-white hover:bg-gray-100"
                   }`}
                   style={{ height: "20px" }}
                   onMouseDown={(e) => handleMouseDown(e, day, value)}

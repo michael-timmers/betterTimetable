@@ -28,11 +28,8 @@ const TimetableView: React.FC<TimetableViewProps> = ({
         </button>
 
         {/* Title of the page */}
-        <h1 className="text-3xl font-bold mx-auto">Your Timetable</h1>
+        <h1 className="text-3xl font-semibold mx-auto text-blue-1000">Your Timetable</h1>
       </div>
-
-      {/* Divider */}
-      <div className="border-b border-gray-500 w-full my-4"></div>
 
       {/* Display message if no timetable could be generated */}
       {!timetableData && (
@@ -138,7 +135,7 @@ const Timetable: React.FC<TimetableProps> = ({ courses, unitColors }) => {
   return (
     <div className="w-full overflow-x-auto">
       {/* Header row with day names */}
-      <div className="mt-6 grid grid-cols-[1fr_2fr_2fr_2fr_2fr_2fr] gap-2 text-white bg-gray-900 p-4 rounded-lg">
+      <div className="mt-6 grid grid-cols-[1fr_2fr_2fr_2fr_2fr_2fr] gap-2 text-white bg-blue-1400 p-4">
         {/* Empty corner cell */}
         <div></div>
         {/* Day names */}
@@ -148,15 +145,15 @@ const Timetable: React.FC<TimetableProps> = ({ courses, unitColors }) => {
           </div>
         ))}
       </div>
-
+  
       {/* Timetable grid */}
-      <div className="grid grid-cols-[1fr_2fr_2fr_2fr_2fr_2fr] gap-2 relative">
-        {/* Time column */}
+      <div className="grid grid-cols-[1fr_2fr_2fr_2fr_2fr_2fr] gap-2 relative bg-white">
+        {/* Time Column */}
         <div className="flex flex-col text-white relative">
           {timeSlots.map((time) => (
             <div
               key={time}
-              className="relative h-8 border-b border-gray-900 bg-gray-900"
+              className="relative h-6 border-b border-blue-1400 bg-blue-1400"
             >
               {/* Display time labels only on the hour */}
               {Number.isInteger(time) && (
@@ -167,32 +164,32 @@ const Timetable: React.FC<TimetableProps> = ({ courses, unitColors }) => {
             </div>
           ))}
         </div>
-
+  
         {/* Columns for each day */}
         {daysOfWeek.map((day) => (
-          <div key={day} className="relative border-l border-gray-700">
+          <div key={day} className="relative border-l border-gray-300">
             {/* Rows for each time slot */}
             {timeSlots.map((time, idx) => (
               <div
                 key={time}
-                className="relative h-8 border-b border-gray-600"
+                className="relative h-6 border-b border-blue-1400"
               >
                 {/* Place courses that start at this time */}
                 {timetable[day][time]?.map((course, index, arr) => {
                   const { start, end } = parseTime(course.time);
                   const duration = end - start; // Duration in hours
-
-                  // Calculate height based on duration (1 hour = 4rem)
-                  const height = duration * 4; // Each half-hour slot is h-4 (2rem)
-
+  
+                  // Calculate height: Now each hour is 3rem (so, e.g., half-hour = 1.5rem)
+                  const height = duration * 3;
+                  
                   // Width adjusts if multiple courses overlap at the same time
                   const width = 100 / arr.length;
                   // Position courses side by side if overlapping
                   const leftPosition = index * width;
-
+  
                   // Get the assigned color for the course's unit
                   const courseColor = unitColors[course.unitCode];
-
+  
                   return (
                     <div
                       key={course.id}
@@ -221,15 +218,14 @@ const Timetable: React.FC<TimetableProps> = ({ courses, unitColors }) => {
             {/* Overlay grid lines */}
             <div className="absolute inset-0 grid grid-rows-[repeat(26,_1fr)]">
               {timeSlots.map((_, idx) => (
-                <div key={idx} className="border-b border-gray-600 h-8"></div>
+                <div key={idx} className="border-b border-gray-200 h-6"></div>
               ))}
             </div>
-
           </div>
         ))}
       </div>
     </div>
-  );
+  );  
 };
 
 

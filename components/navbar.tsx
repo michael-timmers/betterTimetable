@@ -31,7 +31,7 @@ export default function Navbar({ user }) {
   };
 
   return (
-    <div className="navbar bg-gray-900 text-white">
+    <div className="navbar bg-blue-1200 text-white">
       <div className="navbar-start">
         <div className="dropdown">
           <div
@@ -60,9 +60,13 @@ export default function Navbar({ user }) {
           )}
         </div>
 
-        <Link href="/" className="btn btn-ghost rounded-full text-xl px-6">
+        <Link href="/" className="btn btn-ghost rounded-full text-xl px-6 flex items-center space-x-4">
+          {/* Logo */}
+          <div className="qutLogo w-10 h-10"></div>
+          {/* Text */}
           <div className="inline">
-            <span className="text-white font-normal">Better</span><span className="text-blue-1000 font-normal inline">Timetable</span>
+            <span className="text-white font-normal">Better</span>
+            <span className="text-blue-1000 font-normal inline">Timetable</span>
           </div>
         </Link>
       </div>

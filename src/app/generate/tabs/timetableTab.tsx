@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { createPortal } from "react-dom";
 import filterCourseList from "../algorithms/coreAlgorithm";
 import { Course, TimetableViewProps } from "../algorithms/interfaces";
 
@@ -11,7 +12,6 @@ const TimetableView: React.FC<TimetableViewProps> = ({
   preferences,
   setTab,
 }) => {
-
   // Filter the course list based on user preferences to generate a conflict-free timetable
   const timetableData = filterCourseList(courseList, preferences.studyTimes);
 
@@ -19,22 +19,18 @@ const TimetableView: React.FC<TimetableViewProps> = ({
     <>
       {/* Header with Back button and title */}
       <div className="flex items-center w-full mb-4">
-        {/* Back button to return to Preferences tab */}
         <button
           onClick={() => setTab("preferences")}
           className="px-6 py-2 bg-blue-1000 text-white hover:bg-blue-1100 rounded-full"
         >
           Back
         </button>
-
-        {/* Title of the page */}
-        <h1 className="text-3xl font-bold mx-auto">Your Timetable</h1>
+        <h1 className="text-3xl font-semibold mx-auto text-blue-1000">
+          Your Timetable
+        </h1>
       </div>
 
-      {/* Divider */}
-      <div className="border-b border-gray-500 w-full my-4"></div>
-
-      {/* Display message if no timetable could be generated */}
+      {/* Message if no timetable could be generated */}
       {!timetableData && (
         <div className="text-red-500 text-center mb-4">
           Unable to create a conflict-free timetable with the selected preferences.
@@ -42,21 +38,18 @@ const TimetableView: React.FC<TimetableViewProps> = ({
       )}
 
       {/* Display the timetable (even if empty) */}
-      <Timetable
-        courses={timetableData || {}}
-        unitColors={unitColors}
-      />
+      <Timetable courses={timetableData || {}} unitColors={unitColors} />
     </>
   );
 };
 
 // Timetable Component: Renders the timetable grid with courses placed appropriately
 interface TimetableProps {
-  courses: Record<string, { unitName: string; courses: Course[] }>; // Filtered list of courses to display
-  unitColors: { [unitCode: string]: string }; // Mapping of unit codes to their assigned colors
+  courses: Record<string, { unitName: string; courses: Course[] }>;
+  unitColors: { [unitCode: string]: string };
 }
 
-// Constants for days of the week and their full names
+// Constants for day names
 const daysOfWeek = ["MON", "TUE", "WED", "THU", "FRI"];
 const daysFullNames: { [key: string]: string } = {
   MON: "Monday",
@@ -66,17 +59,14 @@ const daysFullNames: { [key: string]: string } = {
   FRI: "Friday",
 };
 
-// Time slots from 8 AM to 8 PM (assuming 13 hours total)
-const hours = Array.from({ length: 13 }, (_, i) => i + 8);
-
-// Helper function to format 24-hour time to 12-hour format (e.g., 13 -> "1 PM")
+// Format 24-hour to 12-hour time
 const format12Hour = (hour: number) => {
   const suffix = hour >= 12 ? "PM" : "AM";
   const formattedHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
   return `${formattedHour} ${suffix}`;
 };
 
-// Parses time strings (e.g., "9AM - 11AM") into numeric 24-hour start and end times
+// Parse a time string like "9AM - 11AM" into numeric start and end times
 const parseTime = (timeStr: string) => {
   const [start, end] = timeStr.split(" - ").map((t) => t.trim());
   const to24Hour = (t: string) => {
@@ -90,58 +80,45 @@ const parseTime = (timeStr: string) => {
   return { start: to24Hour(start), end: to24Hour(end) };
 };
 
-// Groups courses by day and start time without merging overlapping activities
+// Group courses by day and start time
 const groupClassesByDay = (courses: Course[]) => {
   const timetable: { [day: string]: { [hour: number]: Course[] } } = {};
-
-  // Initialize the timetable object with empty objects for each day
   daysOfWeek.forEach((day) => {
     timetable[day] = {};
   });
-
-  // If there are no courses, return the empty timetable
   if (!courses || courses.length === 0) {
     return timetable;
   }
-
-  // Loop through each course and place it in the timetable based on day and start time
   courses.forEach((course) => {
     const { start } = parseTime(course.time);
-
     if (!timetable[course.day][start]) {
       timetable[course.day][start] = [];
     }
-
     timetable[course.day][start].push(course);
   });
-
   return timetable;
 };
 
 const Timetable: React.FC<TimetableProps> = ({ courses, unitColors }) => {
-  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [hoveredCourse, setHoveredCourse] = useState<Course | null>(null);
+  const [tooltipStyle, setTooltipStyle] = useState<
+    { top: number; left: number } | null
+  >(null);
 
-  // Combine all courses into a single array
+  // Combine courses into one flat array and group them
   const allCourses = Object.values(courses).flatMap(
     (courseUnit) => courseUnit.courses
   );
-
-  // Group the courses by day and time
   const timetable = groupClassesByDay(allCourses);
 
-  // Time slots from 8 AM to 9 PM in half-hour increments
-  const timeSlots = Array.from(
-    { length: (21 - 8) * 2 + 1 }, // This resulted in 27 slots
-    (_, i) => 8 + i * 0.5
-  );
-  
+  // Time slots from 8 AM to 9 PM in half-hour increments (27 slots)
+  const timeSlots = Array.from({ length: (21 - 8) * 2 + 1 }, (_, i) => 8 + i * 0.5);
+
   return (
     <div className="w-full overflow-x-auto">
       {/* Header row with day names */}
-      <div className="mt-6 grid grid-cols-[1fr_2fr_2fr_2fr_2fr_2fr] gap-2 text-white bg-gray-900 p-4 rounded-lg">
-        {/* Empty corner cell */}
+      <div className="mt-6 grid grid-cols-[1fr_2fr_2fr_2fr_2fr_2fr] gap-2 text-white bg-blue-1400 p-4">
         <div></div>
-        {/* Day names */}
         {daysOfWeek.map((day) => (
           <div key={day} className="text-center font-bold">
             {daysFullNames[day]}
@@ -150,15 +127,14 @@ const Timetable: React.FC<TimetableProps> = ({ courses, unitColors }) => {
       </div>
 
       {/* Timetable grid */}
-      <div className="grid grid-cols-[1fr_2fr_2fr_2fr_2fr_2fr] gap-2 relative">
-        {/* Time column */}
+      <div className="grid grid-cols-[1fr_2fr_2fr_2fr_2fr_2fr] gap-2 relative bg-white">
+        {/* Time Column */}
         <div className="flex flex-col text-white relative">
           {timeSlots.map((time) => (
             <div
               key={time}
-              className="relative h-8 border-b border-gray-900 bg-gray-900"
+              className="relative h-6 border-b border-blue-1400 bg-blue-1400"
             >
-              {/* Display time labels only on the hour */}
               {Number.isInteger(time) && (
                 <div className="absolute top-0 left-0 w-full text-center">
                   {format12Hour(time)}
@@ -170,27 +146,15 @@ const Timetable: React.FC<TimetableProps> = ({ courses, unitColors }) => {
 
         {/* Columns for each day */}
         {daysOfWeek.map((day) => (
-          <div key={day} className="relative border-l border-gray-700">
-            {/* Rows for each time slot */}
-            {timeSlots.map((time, idx) => (
-              <div
-                key={time}
-                className="relative h-8 border-b border-gray-600"
-              >
-                {/* Place courses that start at this time */}
+          <div key={day} className="relative border-l border-gray-300 overflow-visible">
+            {timeSlots.map((time) => (
+              <div key={time} className="relative h-6 border-b border-blue-1400">
                 {timetable[day][time]?.map((course, index, arr) => {
                   const { start, end } = parseTime(course.time);
                   const duration = end - start; // Duration in hours
-
-                  // Calculate height based on duration (1 hour = 4rem)
-                  const height = duration * 4; // Each half-hour slot is h-4 (2rem)
-
-                  // Width adjusts if multiple courses overlap at the same time
+                  const height = duration * 3; // 1 hour = 3rem
                   const width = 100 / arr.length;
-                  // Position courses side by side if overlapping
                   const leftPosition = index * width;
-
-                  // Get the assigned color for the course's unit
                   const courseColor = unitColors[course.unitCode];
 
                   return (
@@ -202,35 +166,85 @@ const Timetable: React.FC<TimetableProps> = ({ courses, unitColors }) => {
                         left: `${leftPosition}%`,
                         width: `${width}%`,
                         height: `${height}rem`,
-                        backgroundColor: courseColor, // Ensure background covers grid lines
-                        zIndex: 10, // Bring entries above grid lines
+                        backgroundColor: courseColor,
+                        zIndex: 10,
+                      }}
+                      onMouseEnter={(e) => {
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        setHoveredCourse(course);
+                        setTooltipStyle({
+                          top: rect.bottom + window.scrollY,
+                          left: rect.left + window.scrollX,
+                        });
+                      }}
+                      onMouseLeave={() => {
+                        setHoveredCourse(null);
+                        setTooltipStyle(null);
                       }}
                     >
-                      {/* Course details */}
+                      {/* Always-visible summary details */}
                       <div>
-                        <strong>{course.unitCode}</strong> - {course.activity}
+                        <div>
+                          <strong>{course.unitCode}</strong> - {course.activity}
+                        </div>
+                        <div>
+                          {course.room}
+                          <br />
+                          {course.time}
+                        </div>
                       </div>
-                      {course.room}
-                      <br />
-                      {course.time}
                     </div>
                   );
                 })}
               </div>
             ))}
+
             {/* Overlay grid lines */}
-            <div className="absolute inset-0 grid grid-rows-[repeat(26,_1fr)]">
+            <div className="absolute inset-0 grid grid-rows-[repeat(26,_1fr)] z-0">
               {timeSlots.map((_, idx) => (
-                <div key={idx} className="border-b border-gray-600 h-8"></div>
+                <div key={idx} className="border-b border-gray-200 h-6"></div>
               ))}
             </div>
-
           </div>
         ))}
       </div>
+
+      {/* Render the tooltip via a portal so it appears on top of everything else */}
+      {hoveredCourse && tooltipStyle &&
+        createPortal(
+          <div
+            style={{
+              position: "absolute",
+              top: tooltipStyle.top,
+              left: tooltipStyle.left,
+              whiteSpace: "nowrap",
+              zIndex: 9999,
+            }}
+            className="bg-white text-black text-xs p-2 rounded-md border border-blue-1400 shadow-lg"
+          >
+            <div>
+              <strong>Unit:</strong> {hoveredCourse.unitName || hoveredCourse.unitCode}
+            </div>
+            <div>
+              <strong>Class Type:</strong> {hoveredCourse.classType || "N/A"}
+            </div>
+            <div>
+              <strong>Activity:</strong> {hoveredCourse.activity}
+            </div>
+            <div>
+              <strong>Location:</strong> {hoveredCourse.room}
+            </div>
+            <div>
+              <strong>Time:</strong> {hoveredCourse.time}
+            </div>
+            <div>
+              <strong>Staff:</strong> {hoveredCourse.staff || "TBA"}
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 };
-
 
 export default TimetableView;

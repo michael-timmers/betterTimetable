@@ -112,88 +112,96 @@ const Details = () => {
       setLoading(false);
     }
   };
-
-  const handleAddUnit = async () => {
-    if (selectedPeriod) {
-      const formattedUnitCode = unitCode.toUpperCase();
-      try {
-        const dbResponse = await checkUnit(formattedUnitCode);
-        let unitData: CourseData;
-        if (dbResponse.exists) {
-          const courseResponse = await downloadUnit(formattedUnitCode);
-          if (courseResponse.success) {
-            unitData = {
-              unitName: courseResponse.unitName,
-              courses: courseResponse.courseData,
-            };
-          } else {
-            setError("Invalid unit data received.");
-            setShowDialog(false);
-            setUnitCode("");
-            setSelectedPeriod("");
-            return;
-          }
+// Modify the handleAddUnit function to assign unique colors dynamically
+const handleAddUnit = async () => {
+  if (selectedPeriod) {
+    const formattedUnitCode = unitCode.toUpperCase();
+    try {
+      const dbResponse = await checkUnit(formattedUnitCode);
+      let unitData: CourseData;
+      if (dbResponse.exists) {
+        const courseResponse = await downloadUnit(formattedUnitCode);
+        if (courseResponse.success) {
+          unitData = {
+            unitName: courseResponse.unitName,
+            courses: courseResponse.courseData,
+          };
         } else {
-          const response = await fetch(
-            `/api/course-data?unitCode=${formattedUnitCode}&teachingPeriod=${selectedPeriod}`
-          );
-          const data = await response.json();
-          unitData = data[formattedUnitCode];
-          uploadUnit(formattedUnitCode, unitData.courses, unitData.unitName).catch((err) => {
-            console.error("Failed to add unit to the database:", err);
-          });
+          setError("Invalid unit data received.");
+          setShowDialog(false);
+          setUnitCode("");
+          setSelectedPeriod("");
+          return;
         }
-        setCourseList((prev) => ({
-          ...prev,
-          [formattedUnitCode]: unitData,
-        }));
-
-        // Assign a color from the color palette to the new unit
-        const colorIndex = Object.keys(courseList).length % colorPalette.length;
-        setUnitColors((prev) => ({
-          ...prev,
-          [formattedUnitCode]: colorPalette[colorIndex],
-        }));
-
-        // Set the unit's timeslots to be visible by default
-        setVisibleUnits((prev) => ({
-          ...prev,
-          [formattedUnitCode]: true,
-        }));
-
-        setShowDialog(false);
-        setUnitCode("");
-        setSelectedPeriod("");
-      } catch {
-        setError("Failed to add the unit.");
+      } else {
+        const response = await fetch(
+          `/api/course-data?unitCode=${formattedUnitCode}&teachingPeriod=${selectedPeriod}`
+        );
+        const data = await response.json();
+        unitData = data[formattedUnitCode];
+        uploadUnit(formattedUnitCode, unitData.courses, unitData.unitName).catch((err) => {
+          console.error("Failed to add unit to the database:", err);
+        });
       }
-    } else {
-      setError("Please select a valid teaching period.");
-    }
-  };
 
-  const handleRemoveUnit = (unitCodeToRemove: string) => {
-    setCourseList((prev) => {
-      const updated = { ...prev };
-      delete updated[unitCodeToRemove];
-      return updated;
-    });
-    setSelectedCourses((prev) => {
-      const updated = { ...prev };
-      delete updated[unitCodeToRemove];
-      return updated;
-    });
-    setUnitColors((prev) => {
-      const updated = { ...prev };
-      delete updated[unitCodeToRemove];
-      return updated;
-    });
-    setVisibleUnits((prev) => {
-      const updated = { ...prev };
-      delete updated[unitCodeToRemove];
-      return updated;
-    });
-  };
+      setCourseList((prev) => ({
+        ...prev,
+        [formattedUnitCode]: unitData,
+      }));
+
+      // Assign a unique color from the palette
+      setUnitColors((prev) => {
+        // Get the list of currently used colors
+        const usedColors = Object.values(prev);
+
+        // Find the first available (unused) color from the palette
+        const availableColor = colorPalette.find((color) => !usedColors.includes(color)) || colorPalette[0];
+
+        return {
+          ...prev,
+          [formattedUnitCode]: availableColor,
+        };
+      });
+
+      // Set the unit's timeslots to be visible by default
+      setVisibleUnits((prev) => ({
+        ...prev,
+        [formattedUnitCode]: true,
+      }));
+
+      setShowDialog(false);
+      setUnitCode("");
+      setSelectedPeriod("");
+    } catch {
+      setError("Failed to add the unit.");
+    }
+  } else {
+    setError("Please select a valid teaching period.");
+  }
+};
+
+const handleRemoveUnit = (unitCodeToRemove: string) => {
+  setCourseList((prev) => {
+    const updated = { ...prev };
+    delete updated[unitCodeToRemove];
+    return updated;
+  });
+  setSelectedCourses((prev) => {
+    const updated = { ...prev };
+    delete updated[unitCodeToRemove];
+    return updated;
+  });
+  setUnitColors((prev) => {
+    const updated = { ...prev };
+    delete updated[unitCodeToRemove];
+    return updated;
+  });
+  setVisibleUnits((prev) => {
+    const updated = { ...prev };
+    delete updated[unitCodeToRemove];
+    return updated;
+  });
+};
 
   // Toggle the visibility of timeslots for a given unit
   const toggleUnitVisibility = (unitCode: string) => {
@@ -233,110 +241,153 @@ const Details = () => {
 
   // Render the unit/timeslot selection UI
   return (
-    <div className="flex flex-col md:flex-row">
-      <section className="w-full md:w-1/4 p-6 bg-gray-100 border-r border-gray-300">
-        <h2 className="text-2xl font-bold mb-4">Add Unit</h2>
-        {error && <p className="text-red-500 mb-4">{error}</p>}
-        <div className="mb-6">
-          <input
-            type="text"
-            className="px-4 py-2 border rounded w-full"
-            placeholder="Enter unit code"
-            value={unitCode}
-            onChange={(e) => setUnitCode(e.target.value)}
-          />
-        </div>
+    <div className="flex flex-col md:flex-row bg-white">
 
-        <button
-          onClick={handleSearch}
-          className="px-4 py-2 bg-blue-600 text-white rounded w-full"
-          disabled={loading}
+      {showDialog && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+          onClick={() => {
+            setShowDialog(false);
+            setLoading(false); // Reset loading when popup is closed
+          }}
         >
-          {loading ? "Searching..." : "Search"}
-        </button>
-
-        {showDialog && validPeriods.length > 0 && (
-          <div className="mt-4 p-4 border rounded bg-white">
-            <p className="mb-2">Select a Teaching Period:</p>
+          <div
+            className="bg-white border border-blue-1400 p-6 rounded-lg relative z-60"
+            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the dialog
+          >
+            <button
+              onClick={() => setShowDialog(false)}
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-800"
+            >
+              ✖
+            </button>
+            <h2 className="text-xl mb-4 font-semibold text-blue-1300">Select a Teaching Period</h2>
             <select
+              className="mb-4 px-6 py-2 rounded-lg bg-blue-1500 text-black"
               value={selectedPeriod}
               onChange={(e) => setSelectedPeriod(e.target.value)}
-              className="px-2 py-1 border rounded w-full"
             >
               <option value="">Select period</option>
-              {validPeriods.map((period, idx) => (
-                <option key={idx} value={period.value}>
+              {validPeriods.map((period: any) => (
+                <option key={period.value} value={period.value}>
                   {period.text}
                 </option>
               ))}
             </select>
-            <button
-              onClick={handleAddUnit}
-              className="mt-4 px-4 py-2 bg-green-600 text-white rounded w-full"
-            >
-              Confirm
-            </button>
+            <div>
+              <button
+                onClick={handleAddUnit}
+                className="px-6 py-2 bg-blue-1000 text-white hover:bg-blue-1100 rounded-full"
+              >
+                Add Unit
+              </button>
+            </div>
           </div>
-        )}
+        </div>
+      )}
 
-        <h2 className="text-2xl font-bold mb-4">Timeslots</h2>
+      <section className="w-full md:w-1/4 p-6 bg-blue-1500 border-r border-gray-300">
+      <div className="flex items-center justify-center w-full h-10 mb-6">
+        {loading ? (
+          <div className="text-blue-1300 font-bold text-lg">Searching...</div>
+        ) : (
+          <>
+            <input
+              type="text"
+              className="px-4 py-2 border text-gray-700 rounded-full bg-white border-blue-1400 w-full"
+              placeholder="Enter unit code"
+              value={unitCode}
+              onChange={(e) => setUnitCode(e.target.value)}
+            />
+            <button
+              onClick={handleSearch}
+              className="px-4 py-2 bg-blue-1300 text-white rounded-full"
+              disabled={loading}
+            >
+              Search
+            </button>
+          </>
+        )}
+      </div>
+      {error && <p className="text-red-500 mb-4">{error}</p>}
+
         <div>
           {Object.keys(sidebarData)
             .sort()
             .map((unit) => (
-              <div key={unit} className="mb-6">
+              <div key={unit} className="mb-3">
                 <h3
-                  className={`text-xl font-semibold ${unitColors[unit]} cursor-pointer`}
+                  className="text-lg text-white px-4 py-2 font-semibold bg-blue-1400 flex items-center justify-between cursor-pointer"
                   onClick={() => toggleUnitVisibility(unit)} // Toggle on click
                 >
-                  {unit}{" "}
-                  <span
-                    className="cursor-pointer text-red-500"
-                    onClick={() => handleRemoveUnit(unit)}
-                  >
-                    ✖
-                  </span>
+                  <div className="flex items-center">
+                    {/* Arrow that flips depending on visibility */}
+                    <div
+                      className={`mr-4 transform transition-transform ${
+                        visibleUnits[unit] ? "rotate-180" : "mb-2"
+                      }`}
+                    >
+                      <div className="w-2 h-2 border-solid border-r-2 border-b-2 border-white transform rotate-45"></div>
+                    </div>
+                    {unit}
+                  </div>
+                  <div className="flex items-center">
+                    {/* Circle with the unit color */}
+                    <div
+                      className="unit-circle"
+                      style={{ backgroundColor: unitColors[unit] || "white" }}
+                    ></div>
+                    <span
+                      className="cursor-pointer text-white"
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent toggle when clicking "✖"
+                        handleRemoveUnit(unit);
+                      }}
+                    >
+                      ✖
+                    </span>
+                  </div>
                 </h3>
                 {visibleUnits[unit] && (
-                  <div>
-                    {Object.keys(sidebarData[unit]).map((activity) => (
-                      <div key={activity} className="ml-4 mb-4">
-                        <p className="font-bold">{activity.toUpperCase()}:</p>
-                        <ul className="ml-4 list-disc">
-                          {sidebarData[unit][activity].map((course) => {
-                            const isSelected =
-                              selectedCourses[unit] &&
-                              selectedCourses[unit][activity] &&
-                              selectedCourses[unit][activity].id === course.id;
-                            return (
-                              <li
-                                key={course.id}
-                                onClick={() => {
-                                  setSelectedCourses((prev) => ({
-                                    ...prev,
-                                    [unit]: {
-                                      ...prev[unit],
-                                      [activity]: course,
-                                    },
-                                  }));
-                                }}
-                                className={`cursor-pointer ${isSelected ? "font-bold underline text-blue-600" : ""}`}
-                              >
-                                {course.day} {course.time}
-                              </li>
-                            );
-                          })}
-                        </ul>
-                      </div>
-                    ))}
-                  </div>
+                  <div className="max-h-[40vh] overflow-y-auto bg-white text-gray-600">
+                  {Object.keys(sidebarData[unit]).map((activity) => (
+                    <div key={activity} className="mb-4">
+                      <p className="bg-gray-500 px-4 py-2 text-white">{activity.toUpperCase()}</p>
+                      <ul className="list-none"> {/* Replaced list-disc with list-none */}
+                        {sidebarData[unit][activity].map((course) => {
+                          const isSelected =
+                            selectedCourses[unit] &&
+                            selectedCourses[unit][activity] &&
+                            selectedCourses[unit][activity].id === course.id;
+                          return (
+                            <li
+                              key={course.id}
+                              onClick={() => {
+                                setSelectedCourses((prev) => ({
+                                  ...prev,
+                                  [unit]: {
+                                    ...prev[unit],
+                                    [activity]: course,
+                                  },
+                                }));
+                              }}
+                              className={`px-4 py-2 cursor-pointer ${isSelected ? "bg-gray-300" : ""}`}
+                            >
+                              {course.day} {course.time}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  ))}
+                </div>                
                 )}
               </div>
             ))}
         </div>
       </section>
 
-      <section className="w-full md:w-3/4 p-6">
+      <section className="w-full md:w-3/4 pr-6 pb-6">
         <TimetableView
           courseList={selectedCourseList}
           unitColors={unitColors}

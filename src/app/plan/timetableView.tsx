@@ -108,7 +108,7 @@ const Timetable: React.FC<TimetableProps> = ({ courses, unitColors }) => {
           {timeSlots.map((time) => (
             <div
               key={time}
-              className="relative h-6 border-b border-blue-1400 bg-blue-1400"
+              className="relative h-6 border-b border-blue-1400 text-white bg-blue-1400"
             >
               {Number.isInteger(time) && (
                 <div className="absolute top-0 left-0 w-full text-center">
@@ -135,7 +135,7 @@ const Timetable: React.FC<TimetableProps> = ({ courses, unitColors }) => {
                   return (
                     <div
                       key={course.id}
-                      className={`absolute text-xs p-1 rounded-md shadow-md cursor-pointer ${courseColor}`}
+                      className={`absolute text-xs p-1 text-white rounded-md shadow-md cursor-pointer ${courseColor}`}
                       style={{
                         top: 0,
                         left: `${leftPosition}%`,

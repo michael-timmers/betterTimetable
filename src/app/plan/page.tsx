@@ -7,17 +7,6 @@ export default async function ServerComponent() {
 
   return (
     <>
-      <p>
-        The following user has logged in:{" "}
-        {user ? (
-          <>
-            {user.firstName} {user.lastName}
-          </>
-        ) : (
-          "Guest"
-        )}
-      </p>
-      <br />
       <Details />
     </>
   );

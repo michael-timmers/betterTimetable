@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import TimetableView from "./timetableView";
 import UnitSelection from "./sidebarView";
-import { SelectedCourses } from "./courseTypes";
+import { SelectedCourses } from "./manageTimeslots";
 
 const Details = () => {
   const [selectedCourses, setSelectedCourses] = useState<SelectedCourses>({});

@@ -1,11 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import checkUnit from "../generate/download_data/checkUnits";
-import uploadUnit from "../generate/download_data/uploadUnit";
-import downloadUnit from "../generate/download_data/downloadUnits";
+import React, { useState } from "react";
 import TimetableView from "./timetableView"; // Adjust the import path as needed
-import { Course, CourseData } from "./courseTypes"
+import { Course, CourseData, groupActivitiesByUnit, getSelectedUnits } from "./manageTimeslots"
 import { fetchAvailablePeriods, fetchCourseData } from "./fetchData"
 
 // Define a color palette to assign colors to units dynamically
@@ -21,6 +18,10 @@ const colorPalette = [
 
 
 
+
+
+
+
 const Details = () => {
   const [courseList, setCourseList] = useState<{ [key: string]: CourseData }>({});
   const [unitCode, setUnitCode] = useState("");
@@ -31,8 +32,16 @@ const Details = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedCourses, setSelectedCourses] = useState<Record<string, Record<string, Course>>>({});
   const [unitColors, setUnitColors] = useState<{ [unitCode: string]: string }>({});
-  const [visibleUnits, setVisibleUnits] = useState<{ [unitCode: string]: boolean }>({});
+  const [dropdownShow, setDropdownShow] = useState<{ [unitCode: string]: boolean }>({});
 
+  // Group courses by unit and activity
+  const sidebarData = groupActivitiesByUnit(courseList);
+
+  // Get selected units
+  const selectedCourseList = getSelectedUnits(selectedCourses, courseList);
+  
+
+  
 
 
   const handleSearch = async () => {
@@ -99,7 +108,7 @@ const handleAddUnit = async () => {
       });
 
       // Set the unit's timeslots to be visible by default
-      setVisibleUnits((prev) => ({
+      setDropdownShow((prev) => ({
         ...prev,
         [formattedUnitCode]: true,
       }));
@@ -115,6 +124,7 @@ const handleAddUnit = async () => {
     setError("Please select a valid teaching period.");
   }
 };
+
 
 
 
@@ -135,52 +145,23 @@ const handleRemoveUnit = (unitCodeToRemove: string) => {
     delete updated[unitCodeToRemove];
     return updated;
   });
-  setVisibleUnits((prev) => {
+  setDropdownShow((prev) => {
     const updated = { ...prev };
     delete updated[unitCodeToRemove];
     return updated;
   });
 };
 
-  // Toggle the visibility of timeslots for a given unit
-  const toggleUnitVisibility = (unitCode: string) => {
-    setVisibleUnits((prev) => ({
+
+
+  // Toggle unit dropdowns
+  const toggleUnitDropdown = (unitCode: string) => {
+    setDropdownShow((prev) => ({
       ...prev,
       [unitCode]: !prev[unitCode],
     }));
   };
 
-  // Group courses by unit and activity
-  const sidebarData: Record<string, Record<string, Course[]>> = Object.keys(courseList).reduce(
-    (acc, unit) => {
-      const courses = courseList[unit].courses;
-      const groups = courses.reduce((groupAcc: Record<string, Course[]>, course) => {
-        if (!groupAcc[course.activity]) {
-          groupAcc[course.activity] = [];
-        }
-        groupAcc[course.activity].push(course);
-        return groupAcc;
-      }, {} as Record<string, Course[]>);
-      acc[unit] = groups;
-      return acc;
-    },
-    {} as Record<string, Record<string, Course[]>>
-  );
-
-
-  // PART THAT SELECTS THE UNITS -----------------------------------------------------------------------------------------------------------------------------------------------------------------
-  const selectedCourseList = Object.keys(selectedCourses).reduce(
-    (acc, unit) => {
-      const selectedForUnit = Object.values(selectedCourses[unit]);
-      if (selectedForUnit.length > 0) {
-        acc[unit] = { unitName: courseList[unit].unitName, courses: selectedForUnit };
-      }
-      return acc;
-    },
-    {} as { [key: string]: { unitName: string; courses: Course[] } }
-  );
-
-  
 
   // Render the unit/timeslot selection UI
   return (
@@ -261,13 +242,13 @@ const handleRemoveUnit = (unitCodeToRemove: string) => {
               <div key={unit} className="mb-3">
                 <h3
                   className="text-lg text-white px-4 py-2 font-semibold bg-blue-1400 flex items-center justify-between cursor-pointer"
-                  onClick={() => toggleUnitVisibility(unit)} // Toggle on click
+                  onClick={() => toggleUnitDropdown(unit)} // Toggle on click
                 >
                   <div className="flex items-center">
                     {/* Arrow that flips depending on visibility */}
                     <div
                       className={`mr-4 transform transition-transform ${
-                        visibleUnits[unit] ? "rotate-180" : "mb-2"
+                        dropdownShow[unit] ? "rotate-180" : "mb-2"
                       }`}
                     >
                       <div className="w-2 h-2 border-solid border-r-2 border-b-2 border-white transform rotate-45"></div>
@@ -291,7 +272,7 @@ const handleRemoveUnit = (unitCodeToRemove: string) => {
                     </span>
                   </div>
                 </h3>
-                {visibleUnits[unit] && (
+                {dropdownShow[unit] && (
                   <div className="max-h-[40vh] overflow-y-auto bg-white text-gray-600">
                   {Object.keys(sidebarData[unit]).map((activity) => (
                     <div key={activity} className="mb-4">
@@ -340,5 +321,7 @@ const handleRemoveUnit = (unitCodeToRemove: string) => {
     </div>
   );
 };
+
+
 
 export default Details;

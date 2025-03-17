@@ -5,6 +5,8 @@ import checkUnit from "../generate/download_data/checkUnits";
 import uploadUnit from "../generate/download_data/uploadUnit";
 import downloadUnit from "../generate/download_data/downloadUnits";
 import TimetableView from "./timetableView"; // Adjust the import path as needed
+import { Course, CourseData } from "./courseTypes"
+import { fetchAvailablePeriods, fetchCourseData } from "./fetchData"
 
 // Define a color palette to assign colors to units dynamically
 const colorPalette = [
@@ -17,34 +19,11 @@ const colorPalette = [
   "bg-pink-1000",
 ];
 
-// -----------------------------------------------------------------------
-// Data type definitions
-// -----------------------------------------------------------------------
 
-export interface Course {
-  id: string;
-  unitCode: string;
-  unitName: string;
-  classType: string;
-  activity: string;
-  day: string;
-  time: string;
-  room: string;
-  teachingStaff: string;
-}
 
-interface CourseData {
-  unitName: string;
-  courses: Course[];
-}
-
-// -----------------------------------------------------------------------
-// Details Component
-// -----------------------------------------------------------------------
 const Details = () => {
   const [courseList, setCourseList] = useState<{ [key: string]: CourseData }>({});
   const [unitCode, setUnitCode] = useState("");
-  const [teachingPeriods, setTeachingPeriods] = useState<any[]>([]);
   const [selectedPeriod, setSelectedPeriod] = useState("");
   const [loading, setLoading] = useState(false);
   const [validPeriods, setValidPeriods] = useState<any[]>([]);
@@ -52,35 +31,10 @@ const Details = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedCourses, setSelectedCourses] = useState<Record<string, Record<string, Course>>>({});
   const [unitColors, setUnitColors] = useState<{ [unitCode: string]: string }>({});
-  
-  // Track which units' timeslots are visible
   const [visibleUnits, setVisibleUnits] = useState<{ [unitCode: string]: boolean }>({});
 
-  // Fetch teaching periods on component mount
-  useEffect(() => {
-    const fetchTeachingPeriods = async () => {
-      try {
-        const response = await fetch("/api/teaching-data");
-        const data = await response.json();
-        if (!data || data.error) {
-          setError("Failed to fetch teaching periods");
-        } else {
-          setTeachingPeriods(data);
-        }
-      } catch {
-        setError("Failed to fetch teaching periods");
-      }
-    };
-    fetchTeachingPeriods();
-  }, []);
 
 
-  useEffect(() => {
-    console.log("UNITS FOR MANNY", selectedCourses);
-  }, []);
-
-
-  // Handlers for adding a unit
   const handleSearch = async () => {
     if (!unitCode) {
       setError("Please enter a unit code");
@@ -90,73 +44,45 @@ const Details = () => {
       setError("Unit already added");
       return;
     }
+  
     setLoading(true);
     setError(null);
     setValidPeriods([]);
+  
     try {
       const formattedUnitCode = unitCode.toUpperCase();
-      let validResults: any[] = [];
-      for (let period of teachingPeriods) {
-        const response = await fetch(
-          `/api/course-data?unitCode=${formattedUnitCode}&teachingPeriod=${period.value}`
-        );
-        const data = await response.json();
-        if (Object.keys(data).length === 0) continue;
-        if (data && !data.error) {
-          validResults.push({ text: period.text, value: period.value });
-        }
-      }
-      setValidPeriods(validResults);
-      if (validResults.length === 0) {
+      
+      // Call the consolidated function
+      const { validPeriods } = await fetchAvailablePeriods(formattedUnitCode);
+      setValidPeriods(validPeriods);
+  
+      if (validPeriods.length === 0) {
         setError("No valid periods found for this unit.");
       } else {
         setShowDialog(true);
       }
-    } catch (err) {
-      setError("Failed to fetch courses");
+    } catch (error) {
+      setError(error.message || "Failed to fetch courses or teaching periods");
     } finally {
       setLoading(false);
     }
   };
+  
+
+
+  
 // Modify the handleAddUnit function to assign unique colors dynamically
 const handleAddUnit = async () => {
   if (selectedPeriod) {
     const formattedUnitCode = unitCode.toUpperCase();
     try {
-      const dbResponse = await checkUnit(formattedUnitCode);
-      let unitData: CourseData;
-      if (dbResponse.exists) {
-        const courseResponse = await downloadUnit(formattedUnitCode);
-        if (courseResponse.success) {
-          unitData = {
-            unitName: courseResponse.unitName,
-            courses: courseResponse.courseData,
-          };
-        } else {
-          setError("Invalid unit data received.");
-          setShowDialog(false);
-          setUnitCode("");
-          setSelectedPeriod("");
-          return;
-        }
-      } else {
-        const response = await fetch(
-          `/api/course-data?unitCode=${formattedUnitCode}&teachingPeriod=${selectedPeriod}`
-        );
-        const data = await response.json();
-        unitData = data[formattedUnitCode];
-        uploadUnit(formattedUnitCode, unitData.courses, unitData.unitName).catch((err) => {
-          console.error("Failed to add unit to the database:", err);
-        });
-      }
-      
+      // Use the fetchCourseData function to retrieve unit data
+      const unitData = await fetchCourseData(formattedUnitCode, selectedPeriod);
+
       setCourseList((prev) => ({
         ...prev,
         [formattedUnitCode]: unitData,
       }));
-
-      // PRINTING THE TIMESLOTS ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-      console.log("THIS IS THE COURSE LIST FOR MANNY", courseList);
 
       // Assign a unique color from the palette
       setUnitColors((prev) => {
@@ -178,16 +104,20 @@ const handleAddUnit = async () => {
         [formattedUnitCode]: true,
       }));
 
+      // Close the dialog and reset form fields
       setShowDialog(false);
       setUnitCode("");
       setSelectedPeriod("");
-    } catch {
+    } catch (err) {
       setError("Failed to add the unit.");
     }
   } else {
     setError("Please select a valid teaching period.");
   }
 };
+
+
+
 
 const handleRemoveUnit = (unitCodeToRemove: string) => {
   setCourseList((prev) => {

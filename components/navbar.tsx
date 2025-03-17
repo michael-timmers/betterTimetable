@@ -60,7 +60,7 @@ export default function Navbar({ user }) {
           )}
         </div>
 
-        <Link href="/" className="btn btn-ghost rounded-full text-xl px-6 flex items-center space-x-4">
+        <Link href="/" className="btn btn-ghost hover:bg-gray-700 rounded-full text-xl px-6 flex items-center space-x-4">
           {/* Logo */}
           <div className="qutLogo w-10 h-10"></div>
           {/* Text */}

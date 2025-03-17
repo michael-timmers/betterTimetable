@@ -60,13 +60,13 @@ export const timeslots = mysqlTable("timeslots", {
   classType: varchar("classType", { length: 255 }),
   activity: varchar("activity", { length: 255 }),
   day: varchar("day", { length: 255 }),
-  classTime: time("classTime"),
+  SlotTime: time("classTime"),
   room: varchar("room", { length: 255 }),
   teachingStaff: varchar("teachingStaff", { length: 255 })
 });
 
 //userClasses table
-export const userClasses = mysqlTable("userClasses", {
+export const userTimeSlots = mysqlTable("userClasses", {
   userId: varchar("userId", { length: 36 }).notNull().references(() => users.id),
-  classId: varchar("classId", { length: 36 }).notNull().references(() => timeslots.id)
+  TimeSlotId: varchar("classId", { length: 36 }).notNull().references(() => timeslots.id)
 });

@@ -184,7 +184,7 @@ const Preferences: React.FC<TimetableViewProps> = ({
 
       {/* Time Selection Grid */}
       <div className="w-full overflow-x-auto mt-6">
-        <div className="grid grid-cols-[0.5fr_repeat(5,1fr)] gap-0.5">
+        <div className="grid grid-cols-[0.5fr_repeat(5,1fr)]">
           {/* Empty top-left corner */}
           <div className="bg-blue-1400 p-2"></div>
 
@@ -215,7 +215,7 @@ const Preferences: React.FC<TimetableViewProps> = ({
                   key={`${day}-${value}`}
                   data-day={day}
                   data-time={value}
-                  className={`p-2 cursor-pointer ${
+                  className={`border-b border-gray-400 border-r p-2 cursor-pointer ${
                     preferences.studyTimes[day]?.includes(value) ||
                     draggedTimeslots[day]?.has(value)
                       ? "bg-blue-1000"

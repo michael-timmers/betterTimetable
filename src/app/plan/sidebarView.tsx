@@ -35,8 +35,7 @@ const Details = () => {
   const [dropdownShow, setDropdownShow] = useState<{ [unitCode: string]: boolean }>({});
   
 
-const handleSearch = async () => {
-  /*
+  const handleSearch = async (forceNew: string = "true") => {  /*
   Description:
     - Asynchronously searches for valid teaching periods for a given unit code.
     - It first validates user input and then calls the consolidated function to fetch available periods.
@@ -48,37 +47,38 @@ const handleSearch = async () => {
     - Updates 'loading', 'error', 'validPeriods', and 'showDialog' state.
     - Does not return a value, but mutates state accordingly.
   */
+    setShowDialog(false);
 
-  if (!unitCode) {
-    setError("Please enter a unit code");
-    return;
-  }
-  if (courseList[unitCode.toUpperCase()]) {
-    setError("Unit already added");
-    return;
-  }
-
-  setLoading(true);
-  setError(null);
-  setValidPeriods([]);
-
-  try {
-    const formattedUnitCode = unitCode.toUpperCase();
-    // Call the consolidated function that returns valid periods
-    const { validPeriods } = await fetchAvailablePeriods(formattedUnitCode, "false");
-    setValidPeriods(validPeriods);
-
-    if (validPeriods.length === 0) {
-      setError("No valid periods found for this unit.");
-    } else {
-      setShowDialog(true);
+    if (!unitCode) {
+      setError("Please enter a unit code");
+      return;
     }
-  } catch (error: any) {
-    setError(error.message || "Failed to fetch courses or teaching periods");
-  } finally {
-    setLoading(false);
-  }
-};
+    if (courseList[unitCode.toUpperCase()]) {
+      setError("Unit already added");
+      return;
+    }
+  
+    setLoading(true);
+    setError(null);
+    setValidPeriods([]);
+  
+    try {
+      const formattedUnitCode = unitCode.toUpperCase();
+      // Use the optional parameter in the call to fetchAvailablePeriods.
+      const { validPeriods } = await fetchAvailablePeriods(formattedUnitCode, forceNew);
+      setValidPeriods(validPeriods);
+  
+      if (validPeriods.length === 0) {
+        setError("No valid periods found for this unit.");
+      } else {
+        setShowDialog(true);
+      }
+    } catch (error: any) {
+      setError(error.message || "Failed to fetch courses or teaching periods");
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
 const handleAddUnit = async () => {
@@ -224,7 +224,7 @@ const handleRemoveUnit = (unitCodeToRemove: string) => {
             </button>
             <h2 className="text-xl mb-4 font-semibold text-blue-1300">Select a Teaching Period</h2>
             <select
-              className="mb-4 px-6 py-2 rounded-lg bg-blue-1500 text-black"
+              className="mb-4 px-6 py-2 w-full rounded-lg bg-blue-1500 text-black"
               value={selectedPeriod}
               onChange={(e) => setSelectedPeriod(e.target.value)}
             >
@@ -235,14 +235,22 @@ const handleRemoveUnit = (unitCodeToRemove: string) => {
                 </option>
               ))}
             </select>
-            <div>
+             {/* "SEMESTER NOT FOUND" button */}
+             <div className="flex flex-col">
               <button
                 onClick={handleAddUnit}
-                className="px-6 py-2 bg-blue-1000 text-white hover:bg-blue-1100 rounded-full"
+                className="px-4 py-2 bg-blue-1000 text-white hover:bg-blue-1100 rounded-full"
               >
                 Add Unit
               </button>
+              <button
+                onClick={() => handleSearch("true")}
+                className="mt-8 mx-10 px-4 py-2 text-sm bg-gray-600 text-white hover:bg-gray-700 rounded-full"
+              >
+                Period not found
+              </button>
             </div>
+
           </div>
         </div>
       )}

@@ -60,7 +60,7 @@ export const timeslots = mysqlTable("timeslots", {
   classType: varchar("classType", { length: 255 }),
   activity: varchar("activity", { length: 255 }),
   day: varchar("day", { length: 255 }),
-  classTime: time("classTime"),
+  classTime: varchar("classTime", { length: 50 }).notNull(),
   room: varchar("room", { length: 255 }),
   teachingStaff: varchar("teachingStaff", { length: 255 })
 });

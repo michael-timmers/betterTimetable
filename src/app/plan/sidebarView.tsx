@@ -33,14 +33,6 @@ const Details = () => {
   const [selectedCourses, setSelectedCourses] = useState<Record<string, Record<string, Course>>>({});
   const [unitColors, setUnitColors] = useState<{ [unitCode: string]: string }>({});
   const [dropdownShow, setDropdownShow] = useState<{ [unitCode: string]: boolean }>({});
-
-  // Group courses by unit and activity
-  const sidebarData = groupActivitiesByUnit(courseList);
-
-  // Get selected units
-  const selectedCourseList = getSelectedUnits(selectedCourses, courseList);
-  
-
   
 
 const handleSearch = async () => {
@@ -73,7 +65,7 @@ const handleSearch = async () => {
   try {
     const formattedUnitCode = unitCode.toUpperCase();
     // Call the consolidated function that returns valid periods
-    const { validPeriods } = await fetchAvailablePeriods(formattedUnitCode);
+    const { validPeriods } = await fetchAvailablePeriods(formattedUnitCode, "false");
     setValidPeriods(validPeriods);
 
     if (validPeriods.length === 0) {
@@ -105,8 +97,11 @@ const handleAddUnit = async () => {
   if (selectedPeriod) {
     const formattedUnitCode = unitCode.toUpperCase();
     try {
+
       // Use fetchCourseData to retrieve and process unit data.
       const unitData = await fetchCourseData(formattedUnitCode, selectedPeriod);
+
+      console.log("Here is the course list", unitData)
 
       setCourseList((prev) => ({
         ...prev,
@@ -195,6 +190,15 @@ const handleRemoveUnit = (unitCodeToRemove: string) => {
   };
 
 
+
+
+  
+  // Group courses by unit and activity
+  const sidebarData = groupActivitiesByUnit(courseList);
+
+  // Get selected units
+  const selectedCourseList = getSelectedUnits(selectedCourses, courseList);
+  
 
   // Render the unit/timeslot selection UI
   return (

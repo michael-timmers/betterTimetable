@@ -1,7 +1,7 @@
 "use server";
 
 import { drizzle } from "drizzle-orm/mysql2";
-import { units, courses } from "../../../db/schema"; 
+import { units, timeslots } from "../../../db/schema"; 
 import { eq } from "drizzle-orm";
 
 export default async function downloadUnit(unitCode: string) {
@@ -24,8 +24,8 @@ export default async function downloadUnit(unitCode: string) {
     // Fetch the course data from the courses table
     const courseQuery = await db
       .select()
-      .from(courses)
-      .where(eq(courses.unitCode, unitCode))
+      .from(timeslots)
+      .where(eq(timeslots.unitId, unitCode))
       .execute();
 
     return { success: true, unitName, courseData: courseQuery };

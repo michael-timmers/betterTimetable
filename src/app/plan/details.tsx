@@ -74,6 +74,14 @@ const Details = () => {
     fetchTeachingPeriods();
   }, []);
 
+
+  useEffect(() => {
+    console.log("UNITS FOR MANNY", selectedCourses);
+  }, []);
+
+
+
+
   // Handlers for adding a unit
   const handleSearch = async () => {
     if (!unitCode) {
@@ -143,11 +151,14 @@ const handleAddUnit = async () => {
           console.error("Failed to add unit to the database:", err);
         });
       }
-
+      
       setCourseList((prev) => ({
         ...prev,
         [formattedUnitCode]: unitData,
       }));
+
+      // PRINTING THE TIMESLOTS ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      console.log("THIS IS THE COURSE LIST FOR MANNY", courseList);
 
       // Assign a unique color from the palette
       setUnitColors((prev) => {
@@ -228,6 +239,8 @@ const handleRemoveUnit = (unitCodeToRemove: string) => {
     {} as Record<string, Record<string, Course[]>>
   );
 
+
+  // PART THAT SELECTS THE UNITS -----------------------------------------------------------------------------------------------------------------------------------------------------------------
   const selectedCourseList = Object.keys(selectedCourses).reduce(
     (acc, unit) => {
       const selectedForUnit = Object.values(selectedCourses[unit]);
@@ -238,6 +251,8 @@ const handleRemoveUnit = (unitCodeToRemove: string) => {
     },
     {} as { [key: string]: { unitName: string; courses: Course[] } }
   );
+
+  
 
   // Render the unit/timeslot selection UI
   return (
@@ -289,12 +304,12 @@ const handleRemoveUnit = (unitCodeToRemove: string) => {
       <section className="w-full md:w-1/4 p-6 bg-blue-1500 border-r border-gray-300">
       <div className="flex items-center justify-center w-full h-10 mb-6">
         {loading ? (
-          <div className="text-blue-1300 font-bold text-lg">Searching...</div>
+          <div className="text-blue-1300 font-bold text-xl">Searching...</div>
         ) : (
           <>
             <input
               type="text"
-              className="px-4 py-2 border text-gray-700 rounded-full bg-white border-blue-1400 w-full"
+              className="px-6 py-2 mr-2 border text-gray-700 rounded-full bg-white border-blue-1400 w-full"
               placeholder="Enter unit code"
               value={unitCode}
               onChange={(e) => setUnitCode(e.target.value)}

@@ -21,7 +21,6 @@ export default async function uploadUnit(unitCode: string, courseData: any[], un
     const courseValues = courseData.map(course => ({
       id: course.id || uuidv4(), // Generate a UUID if ID is not provided
       unitId: unitCode,
-      periodId: null,
       classType: course.classType,
       activity: course.activity,
       day: course.day,

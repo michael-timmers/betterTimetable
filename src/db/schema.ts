@@ -40,11 +40,11 @@ export const sessions = mysqlTable("sessions", {
 });
 
 // Units Table
-//units table
 export const units = mysqlTable("units", {
   id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
   unitCode: varchar("unitCode", { length: 255 }).unique(),
-  unitName: varchar("unitName", { length: 255 })
+  unitName: varchar("unitName", { length: 255 }),
+  periodId: varchar("periodId", { length: 36 }).notNull().references(() => teachingPeriods.id),
 });
 
 //teachingPeriods table
@@ -54,10 +54,9 @@ export const teachingPeriods = mysqlTable("teachingPeriods", {
 });
 
 // timeslots table
-export const timeslots = mysqlTable("classes", {
+export const timeslots = mysqlTable("timeslots", {
   id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
   unitId: varchar("unitId", { length: 36 }).notNull().references(() => units.id),
-  periodId: varchar("periodId", { length: 36 }).notNull().references(() => teachingPeriods.id),
   classType: varchar("classType", { length: 255 }),
   activity: varchar("activity", { length: 255 }),
   day: varchar("day", { length: 255 }),

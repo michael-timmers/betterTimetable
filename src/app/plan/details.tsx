@@ -289,12 +289,12 @@ const handleRemoveUnit = (unitCodeToRemove: string) => {
       <section className="w-full md:w-1/4 p-6 bg-blue-1500 border-r border-gray-300">
       <div className="flex items-center justify-center w-full h-10 mb-6">
         {loading ? (
-          <div className="text-blue-1300 font-bold text-lg">Searching...</div>
+          <div className="text-blue-1300 font-bold text-xl">Searching...</div>
         ) : (
           <>
             <input
               type="text"
-              className="px-4 py-2 border text-gray-700 rounded-full bg-white border-blue-1400 w-full"
+              className="px-6 py-2 mr-2 border text-gray-700 rounded-full bg-white border-blue-1400 w-full"
               placeholder="Enter unit code"
               value={unitCode}
               onChange={(e) => setUnitCode(e.target.value)}

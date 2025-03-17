@@ -43,49 +43,69 @@ const Details = () => {
 
   
 
+const handleSearch = async () => {
+  /*
+  Description:
+    - Asynchronously searches for valid teaching periods for a given unit code.
+    - It first validates user input and then calls the consolidated function to fetch available periods.
+    - Based on the fetched data, it updates the application state to either display an error or show a dialog for further action.
+  Inputs:
+    - Uses 'unitCode' from state (string) representing the unit code entered by the user.
+    - Uses 'courseList' state to check if a unit is already added.
+  State Updates / Outputs:
+    - Updates 'loading', 'error', 'validPeriods', and 'showDialog' state.
+    - Does not return a value, but mutates state accordingly.
+  */
 
-  const handleSearch = async () => {
-    if (!unitCode) {
-      setError("Please enter a unit code");
-      return;
+  if (!unitCode) {
+    setError("Please enter a unit code");
+    return;
+  }
+  if (courseList[unitCode.toUpperCase()]) {
+    setError("Unit already added");
+    return;
+  }
+
+  setLoading(true);
+  setError(null);
+  setValidPeriods([]);
+
+  try {
+    const formattedUnitCode = unitCode.toUpperCase();
+    // Call the consolidated function that returns valid periods
+    const { validPeriods } = await fetchAvailablePeriods(formattedUnitCode);
+    setValidPeriods(validPeriods);
+
+    if (validPeriods.length === 0) {
+      setError("No valid periods found for this unit.");
+    } else {
+      setShowDialog(true);
     }
-    if (courseList[unitCode.toUpperCase()]) {
-      setError("Unit already added");
-      return;
-    }
-  
-    setLoading(true);
-    setError(null);
-    setValidPeriods([]);
-  
-    try {
-      const formattedUnitCode = unitCode.toUpperCase();
-      
-      // Call the consolidated function
-      const { validPeriods } = await fetchAvailablePeriods(formattedUnitCode);
-      setValidPeriods(validPeriods);
-  
-      if (validPeriods.length === 0) {
-        setError("No valid periods found for this unit.");
-      } else {
-        setShowDialog(true);
-      }
-    } catch (error) {
-      setError(error.message || "Failed to fetch courses or teaching periods");
-    } finally {
-      setLoading(false);
-    }
-  };
-  
+  } catch (error: any) {
+    setError(error.message || "Failed to fetch courses or teaching periods");
+  } finally {
+    setLoading(false);
+  }
+};
 
 
-  
-// Modify the handleAddUnit function to assign unique colors dynamically
 const handleAddUnit = async () => {
+  /*
+  Description:
+    - Asynchronously adds a unit to the course list using the selected teaching period.
+    - It fetches the unit data via 'fetchCourseData' and then updates various states including course list, unit colors, and dropdown visibility.
+    - It ensures that each unit gets a unique color from the defined palette.
+  Inputs:
+    - Uses 'selectedPeriod' from state (string) that represents the chosen teaching period.
+    - Uses 'unitCode' from state (string) representing the current unit code.
+  State Updates / Outputs:
+    - Updates 'courseList', 'unitColors', 'dropdownShow', and resets 'showDialog', 'unitCode', and 'selectedPeriod'.
+    - Does not have a return value; it triggers updates via React setState functions.
+  */
   if (selectedPeriod) {
     const formattedUnitCode = unitCode.toUpperCase();
     try {
-      // Use the fetchCourseData function to retrieve unit data
+      // Use fetchCourseData to retrieve and process unit data.
       const unitData = await fetchCourseData(formattedUnitCode, selectedPeriod);
 
       setCourseList((prev) => ({
@@ -93,27 +113,24 @@ const handleAddUnit = async () => {
         [formattedUnitCode]: unitData,
       }));
 
-      // Assign a unique color from the palette
+      // Assign a unique color from the palette if not already used.
       setUnitColors((prev) => {
-        // Get the list of currently used colors
         const usedColors = Object.values(prev);
-
-        // Find the first available (unused) color from the palette
-        const availableColor = colorPalette.find((color) => !usedColors.includes(color)) || colorPalette[0];
-
+        const availableColor =
+          colorPalette.find((color) => !usedColors.includes(color)) || colorPalette[0];
         return {
           ...prev,
           [formattedUnitCode]: availableColor,
         };
       });
 
-      // Set the unit's timeslots to be visible by default
+      // Set the unit's timeslots to be visible by default.
       setDropdownShow((prev) => ({
         ...prev,
         [formattedUnitCode]: true,
       }));
 
-      // Close the dialog and reset form fields
+      // Close the dialog and reset input fields.
       setShowDialog(false);
       setUnitCode("");
       setSelectedPeriod("");
@@ -126,41 +143,57 @@ const handleAddUnit = async () => {
 };
 
 
-
-
-
 const handleRemoveUnit = (unitCodeToRemove: string) => {
-  setCourseList((prev) => {
-    const updated = { ...prev };
-    delete updated[unitCodeToRemove];
-    return updated;
-  });
-  setSelectedCourses((prev) => {
-    const updated = { ...prev };
-    delete updated[unitCodeToRemove];
-    return updated;
-  });
-  setUnitColors((prev) => {
-    const updated = { ...prev };
-    delete updated[unitCodeToRemove];
-    return updated;
-  });
-  setDropdownShow((prev) => {
-    const updated = { ...prev };
-    delete updated[unitCodeToRemove];
-    return updated;
-  });
-};
+    /*
+  Description:
+    - Removes a specified unit from various state objects including course list, selected courses, unit colors, and dropdown visibility.
+    - It ensures that all traces of the unit are deleted from the state.
+  Inputs:
+    - 'unitCodeToRemove' (string): The unit code for the unit that needs to be removed.
+  State Updates / Outputs:
+    - Updates 'courseList', 'selectedCourses', 'unitColors', and 'dropdownShow'.
+    - There is no return value; it relies entirely on React setState functions.
+  */
+    setCourseList((prev) => {
+      const updated = { ...prev };
+      delete updated[unitCodeToRemove];
+      return updated;
+    });
+    setSelectedCourses((prev) => {
+      const updated = { ...prev };
+      delete updated[unitCodeToRemove];
+      return updated;
+    });
+    setUnitColors((prev) => {
+      const updated = { ...prev };
+      delete updated[unitCodeToRemove];
+      return updated;
+    });
+    setDropdownShow((prev) => {
+      const updated = { ...prev };
+      delete updated[unitCodeToRemove];
+      return updated;
+    });
+  };
 
-
-
-  // Toggle unit dropdowns
+ 
   const toggleUnitDropdown = (unitCode: string) => {
+     /*
+    Description:
+      - Toggles the dropdown visibility state for a specific unit.
+      - This function switches the current boolean state of dropdown visibility to its opposite value.
+    Inputs:
+      - 'unitCode' (string): The unit code for which the dropdown visibility should be toggled.
+    State Updates / Outputs:
+      - Updates the 'dropdownShow' state.
+      - Does not return any value; the update is made through React's setState functionality.
+    */
     setDropdownShow((prev) => ({
       ...prev,
       [unitCode]: !prev[unitCode],
     }));
   };
+
 
 
   // Render the unit/timeslot selection UI

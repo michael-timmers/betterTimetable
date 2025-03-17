@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import checkUnit from "../generate/download_data/checkUnits";
-import uploadUnit from "../generate/download_data/uploadUnit";
-import downloadUnit from "../generate/download_data/downloadUnits";
+import React, { useState } from "react";
 import TimetableView from "./timetableView"; // Adjust the import path as needed
+import { Course, CourseData, groupActivitiesByUnit, getSelectedUnits } from "./manageTimeslots"
+import { fetchAvailablePeriods, fetchCourseData } from "./fetchData"
 
 // Define a color palette to assign colors to units dynamically
 const colorPalette = [
@@ -17,34 +16,10 @@ const colorPalette = [
   "bg-pink-1000",
 ];
 
-// -----------------------------------------------------------------------
-// Data type definitions
-// -----------------------------------------------------------------------
 
-export interface Course {
-  id: string;
-  unitCode: string;
-  unitName: string;
-  classType: string;
-  activity: string;
-  day: string;
-  time: string;
-  room: string;
-  teachingStaff: string;
-}
-
-interface CourseData {
-  unitName: string;
-  courses: Course[];
-}
-
-// -----------------------------------------------------------------------
-// Details Component
-// -----------------------------------------------------------------------
 const Details = () => {
   const [courseList, setCourseList] = useState<{ [key: string]: CourseData }>({});
   const [unitCode, setUnitCode] = useState("");
-  const [teachingPeriods, setTeachingPeriods] = useState<any[]>([]);
   const [selectedPeriod, setSelectedPeriod] = useState("");
   const [loading, setLoading] = useState(false);
   const [validPeriods, setValidPeriods] = useState<any[]>([]);
@@ -52,36 +27,23 @@ const Details = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedCourses, setSelectedCourses] = useState<Record<string, Record<string, Course>>>({});
   const [unitColors, setUnitColors] = useState<{ [unitCode: string]: string }>({});
+  const [dropdownShow, setDropdownShow] = useState<{ [unitCode: string]: boolean }>({});
   
-  // Track which units' timeslots are visible
-  const [visibleUnits, setVisibleUnits] = useState<{ [unitCode: string]: boolean }>({});
 
-  // Fetch teaching periods on component mount
-  useEffect(() => {
-    const fetchTeachingPeriods = async () => {
-      try {
-        const response = await fetch("/api/teaching-data");
-        const data = await response.json();
-        if (!data || data.error) {
-          setError("Failed to fetch teaching periods");
-        } else {
-          setTeachingPeriods(data);
-        }
-      } catch {
-        setError("Failed to fetch teaching periods");
-      }
-    };
-    fetchTeachingPeriods();
-  }, []);
+  const handleSearch = async (forceNew: string = "true") => {  /*
+  Description:
+    - Asynchronously searches for valid teaching periods for a given unit code.
+    - It first validates user input and then calls the consolidated function to fetch available periods.
+    - Based on the fetched data, it updates the application state to either display an error or show a dialog for further action.
+  Inputs:
+    - Uses 'unitCode' from state (string) representing the unit code entered by the user.
+    - Uses 'courseList' state to check if a unit is already added.
+  State Updates / Outputs:
+    - Updates 'loading', 'error', 'validPeriods', and 'showDialog' state.
+    - Does not return a value, but mutates state accordingly.
+  */
+    setShowDialog(false);
 
-
-  useEffect(() => {
-    console.log("UNITS FOR MANNY", selectedCourses);
-  }, []);
-
-
-  // Handlers for adding a unit
-  const handleSearch = async () => {
     if (!unitCode) {
       setError("Please enter a unit code");
       return;
@@ -90,98 +52,79 @@ const Details = () => {
       setError("Unit already added");
       return;
     }
+  
     setLoading(true);
     setError(null);
     setValidPeriods([]);
+  
     try {
       const formattedUnitCode = unitCode.toUpperCase();
-      let validResults: any[] = [];
-      for (let period of teachingPeriods) {
-        const response = await fetch(
-          `/api/course-data?unitCode=${formattedUnitCode}&teachingPeriod=${period.value}`
-        );
-        const data = await response.json();
-        if (Object.keys(data).length === 0) continue;
-        if (data && !data.error) {
-          validResults.push({ text: period.text, value: period.value });
-        }
-      }
-      setValidPeriods(validResults);
-      if (validResults.length === 0) {
+      // Use the optional parameter in the call to fetchAvailablePeriods.
+      const { validPeriods } = await fetchAvailablePeriods(formattedUnitCode, forceNew);
+      setValidPeriods(validPeriods);
+  
+      if (validPeriods.length === 0) {
         setError("No valid periods found for this unit.");
       } else {
         setShowDialog(true);
       }
-    } catch (err) {
-      setError("Failed to fetch courses");
+    } catch (error: any) {
+      setError(error.message || "Failed to fetch courses or teaching periods");
     } finally {
       setLoading(false);
     }
   };
-// Modify the handleAddUnit function to assign unique colors dynamically
+
+
 const handleAddUnit = async () => {
+  /*
+  Description:
+    - Asynchronously adds a unit to the course list using the selected teaching period.
+    - It fetches the unit data via 'fetchCourseData' and then updates various states including course list, unit colors, and dropdown visibility.
+    - It ensures that each unit gets a unique color from the defined palette.
+  Inputs:
+    - Uses 'selectedPeriod' from state (string) that represents the chosen teaching period.
+    - Uses 'unitCode' from state (string) representing the current unit code.
+  State Updates / Outputs:
+    - Updates 'courseList', 'unitColors', 'dropdownShow', and resets 'showDialog', 'unitCode', and 'selectedPeriod'.
+    - Does not have a return value; it triggers updates via React setState functions.
+  */
   if (selectedPeriod) {
     const formattedUnitCode = unitCode.toUpperCase();
     try {
-      const dbResponse = await checkUnit(formattedUnitCode);
-      let unitData: CourseData;
-      if (dbResponse.exists) {
-        const courseResponse = await downloadUnit(formattedUnitCode);
-        if (courseResponse.success) {
-          unitData = {
-            unitName: courseResponse.unitName,
-            courses: courseResponse.courseData,
-          };
-        } else {
-          setError("Invalid unit data received.");
-          setShowDialog(false);
-          setUnitCode("");
-          setSelectedPeriod("");
-          return;
-        }
-      } else {
-        const response = await fetch(
-          `/api/course-data?unitCode=${formattedUnitCode}&teachingPeriod=${selectedPeriod}`
-        );
-        const data = await response.json();
-        unitData = data[formattedUnitCode];
-        uploadUnit(formattedUnitCode, unitData.courses, unitData.unitName).catch((err) => {
-          console.error("Failed to add unit to the database:", err);
-        });
-      }
-      
+
+      // Use fetchCourseData to retrieve and process unit data.
+      const unitData = await fetchCourseData(formattedUnitCode, selectedPeriod);
+
+      console.log("Here is the course list", unitData)
+
       setCourseList((prev) => ({
         ...prev,
         [formattedUnitCode]: unitData,
       }));
 
-      // PRINTING THE TIMESLOTS ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-      console.log("THIS IS THE COURSE LIST FOR MANNY", courseList);
-
-      // Assign a unique color from the palette
+      // Assign a unique color from the palette if not already used.
       setUnitColors((prev) => {
-        // Get the list of currently used colors
         const usedColors = Object.values(prev);
-
-        // Find the first available (unused) color from the palette
-        const availableColor = colorPalette.find((color) => !usedColors.includes(color)) || colorPalette[0];
-
+        const availableColor =
+          colorPalette.find((color) => !usedColors.includes(color)) || colorPalette[0];
         return {
           ...prev,
           [formattedUnitCode]: availableColor,
         };
       });
 
-      // Set the unit's timeslots to be visible by default
-      setVisibleUnits((prev) => ({
+      // Set the unit's timeslots to be visible by default.
+      setDropdownShow((prev) => ({
         ...prev,
         [formattedUnitCode]: true,
       }));
 
+      // Close the dialog and reset input fields.
       setShowDialog(false);
       setUnitCode("");
       setSelectedPeriod("");
-    } catch {
+    } catch (err) {
       setError("Failed to add the unit.");
     }
   } else {
@@ -189,67 +132,67 @@ const handleAddUnit = async () => {
   }
 };
 
-const handleRemoveUnit = (unitCodeToRemove: string) => {
-  setCourseList((prev) => {
-    const updated = { ...prev };
-    delete updated[unitCodeToRemove];
-    return updated;
-  });
-  setSelectedCourses((prev) => {
-    const updated = { ...prev };
-    delete updated[unitCodeToRemove];
-    return updated;
-  });
-  setUnitColors((prev) => {
-    const updated = { ...prev };
-    delete updated[unitCodeToRemove];
-    return updated;
-  });
-  setVisibleUnits((prev) => {
-    const updated = { ...prev };
-    delete updated[unitCodeToRemove];
-    return updated;
-  });
-};
 
-  // Toggle the visibility of timeslots for a given unit
-  const toggleUnitVisibility = (unitCode: string) => {
-    setVisibleUnits((prev) => ({
+const handleRemoveUnit = (unitCodeToRemove: string) => {
+    /*
+  Description:
+    - Removes a specified unit from various state objects including course list, selected courses, unit colors, and dropdown visibility.
+    - It ensures that all traces of the unit are deleted from the state.
+  Inputs:
+    - 'unitCodeToRemove' (string): The unit code for the unit that needs to be removed.
+  State Updates / Outputs:
+    - Updates 'courseList', 'selectedCourses', 'unitColors', and 'dropdownShow'.
+    - There is no return value; it relies entirely on React setState functions.
+  */
+    setCourseList((prev) => {
+      const updated = { ...prev };
+      delete updated[unitCodeToRemove];
+      return updated;
+    });
+    setSelectedCourses((prev) => {
+      const updated = { ...prev };
+      delete updated[unitCodeToRemove];
+      return updated;
+    });
+    setUnitColors((prev) => {
+      const updated = { ...prev };
+      delete updated[unitCodeToRemove];
+      return updated;
+    });
+    setDropdownShow((prev) => {
+      const updated = { ...prev };
+      delete updated[unitCodeToRemove];
+      return updated;
+    });
+  };
+
+ 
+  const toggleUnitDropdown = (unitCode: string) => {
+     /*
+    Description:
+      - Toggles the dropdown visibility state for a specific unit.
+      - This function switches the current boolean state of dropdown visibility to its opposite value.
+    Inputs:
+      - 'unitCode' (string): The unit code for which the dropdown visibility should be toggled.
+    State Updates / Outputs:
+      - Updates the 'dropdownShow' state.
+      - Does not return any value; the update is made through React's setState functionality.
+    */
+    setDropdownShow((prev) => ({
       ...prev,
       [unitCode]: !prev[unitCode],
     }));
   };
 
+
+
+
+  
   // Group courses by unit and activity
-  const sidebarData: Record<string, Record<string, Course[]>> = Object.keys(courseList).reduce(
-    (acc, unit) => {
-      const courses = courseList[unit].courses;
-      const groups = courses.reduce((groupAcc: Record<string, Course[]>, course) => {
-        if (!groupAcc[course.activity]) {
-          groupAcc[course.activity] = [];
-        }
-        groupAcc[course.activity].push(course);
-        return groupAcc;
-      }, {} as Record<string, Course[]>);
-      acc[unit] = groups;
-      return acc;
-    },
-    {} as Record<string, Record<string, Course[]>>
-  );
+  const sidebarData = groupActivitiesByUnit(courseList);
 
-
-  // PART THAT SELECTS THE UNITS -----------------------------------------------------------------------------------------------------------------------------------------------------------------
-  const selectedCourseList = Object.keys(selectedCourses).reduce(
-    (acc, unit) => {
-      const selectedForUnit = Object.values(selectedCourses[unit]);
-      if (selectedForUnit.length > 0) {
-        acc[unit] = { unitName: courseList[unit].unitName, courses: selectedForUnit };
-      }
-      return acc;
-    },
-    {} as { [key: string]: { unitName: string; courses: Course[] } }
-  );
-
+  // Get selected units
+  const selectedCourseList = getSelectedUnits(selectedCourses, courseList);
   
 
   // Render the unit/timeslot selection UI
@@ -276,7 +219,7 @@ const handleRemoveUnit = (unitCodeToRemove: string) => {
             </button>
             <h2 className="text-xl mb-4 font-semibold text-blue-1300">Select a Teaching Period</h2>
             <select
-              className="mb-4 px-6 py-2 rounded-lg bg-blue-1500 text-black"
+              className="mb-4 px-6 py-2 w-full rounded-lg bg-blue-1500 text-black"
               value={selectedPeriod}
               onChange={(e) => setSelectedPeriod(e.target.value)}
             >
@@ -287,14 +230,22 @@ const handleRemoveUnit = (unitCodeToRemove: string) => {
                 </option>
               ))}
             </select>
-            <div>
+             {/* "SEMESTER NOT FOUND" button */}
+             <div className="flex flex-col">
               <button
                 onClick={handleAddUnit}
-                className="px-6 py-2 bg-blue-1000 text-white hover:bg-blue-1100 rounded-full"
+                className="px-4 py-2 bg-blue-1000 text-white hover:bg-blue-1100 rounded-full"
               >
                 Add Unit
               </button>
+              <button
+                onClick={() => handleSearch("true")}
+                className="mt-8 mx-10 px-4 py-2 text-sm bg-gray-600 text-white hover:bg-gray-700 rounded-full"
+              >
+                Period not found
+              </button>
             </div>
+
           </div>
         </div>
       )}
@@ -331,13 +282,13 @@ const handleRemoveUnit = (unitCodeToRemove: string) => {
               <div key={unit} className="mb-3">
                 <h3
                   className="text-lg text-white px-4 py-2 font-semibold bg-blue-1400 flex items-center justify-between cursor-pointer"
-                  onClick={() => toggleUnitVisibility(unit)} // Toggle on click
+                  onClick={() => toggleUnitDropdown(unit)} // Toggle on click
                 >
                   <div className="flex items-center">
                     {/* Arrow that flips depending on visibility */}
                     <div
                       className={`mr-4 transform transition-transform ${
-                        visibleUnits[unit] ? "rotate-180" : "mb-2"
+                        dropdownShow[unit] ? "rotate-180" : "mb-2"
                       }`}
                     >
                       <div className="w-2 h-2 border-solid border-r-2 border-b-2 border-white transform rotate-45"></div>
@@ -361,7 +312,7 @@ const handleRemoveUnit = (unitCodeToRemove: string) => {
                     </span>
                   </div>
                 </h3>
-                {visibleUnits[unit] && (
+                {dropdownShow[unit] && (
                   <div className="max-h-[40vh] overflow-y-auto bg-white text-gray-600">
                   {Object.keys(sidebarData[unit]).map((activity) => (
                     <div key={activity} className="mb-4">
@@ -410,5 +361,7 @@ const handleRemoveUnit = (unitCodeToRemove: string) => {
     </div>
   );
 };
+
+
 
 export default Details;

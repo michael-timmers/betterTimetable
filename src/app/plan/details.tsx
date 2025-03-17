@@ -74,6 +74,14 @@ const Details = () => {
     fetchTeachingPeriods();
   }, []);
 
+
+  useEffect(() => {
+    console.log("UNITS FOR MANNY", selectedCourses);
+  }, []);
+
+
+
+
   // Handlers for adding a unit
   const handleSearch = async () => {
     if (!unitCode) {
@@ -143,11 +151,14 @@ const handleAddUnit = async () => {
           console.error("Failed to add unit to the database:", err);
         });
       }
-
+      
       setCourseList((prev) => ({
         ...prev,
         [formattedUnitCode]: unitData,
       }));
+
+      // PRINTING THE TIMESLOTS ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      console.log("THIS IS THE COURSE LIST FOR MANNY", courseList);
 
       // Assign a unique color from the palette
       setUnitColors((prev) => {
@@ -228,6 +239,8 @@ const handleRemoveUnit = (unitCodeToRemove: string) => {
     {} as Record<string, Record<string, Course[]>>
   );
 
+
+  // PART THAT SELECTS THE UNITS -----------------------------------------------------------------------------------------------------------------------------------------------------------------
   const selectedCourseList = Object.keys(selectedCourses).reduce(
     (acc, unit) => {
       const selectedForUnit = Object.values(selectedCourses[unit]);
@@ -238,6 +251,8 @@ const handleRemoveUnit = (unitCodeToRemove: string) => {
     },
     {} as { [key: string]: { unitName: string; courses: Course[] } }
   );
+
+  
 
   // Render the unit/timeslot selection UI
   return (

@@ -43,16 +43,30 @@ export const sessions = mysqlTable("sessions", {
 export const units = mysqlTable("units", {
   unitCode: varchar("unitCode", { length: 10 }).primaryKey(),
   unitName: varchar("unitName", { length: 255 }).notNull(),
+  teachingPeriods: varchar("teachingPeriods", { length: 255 }).notNull(),
 });
 
-// Courses Table
-export const courses = mysqlTable("courses", {
+//teachingPeriods table
+export const teachingPeriods = mysqlTable("teachingPeriods", {
   id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
-  unitCode: varchar("unitCode", { length: 10 }).notNull(),
-  classType: varchar("classType", { length: 255 }).notNull(),
-  activity: varchar("activity", { length: 50 }).notNull(),
-  day: varchar("day", { length: 10 }).notNull(),
-  time: varchar("time", { length: 50 }).notNull(),
-  room: varchar("room", { length: 50 }).notNull(),
-  teachingStaff: varchar("teachingStaff", { length: 255 }).notNull()
+  periodName: varchar("periodName", { length: 255 })
+});
+
+// timeslots table
+export const timeslots = mysqlTable("classes", {
+  id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
+  unitId: varchar("unitId", { length: 36 }).notNull().references(() => units.id),
+  periodId: varchar("periodId", { length: 36 }).notNull().references(() => teachingPeriods.id),
+  classType: varchar("classType", { length: 255 }),
+  activity: varchar("activity", { length: 255 }),
+  day: varchar("day", { length: 255 }),
+  classTime: time("classTime"),
+  room: varchar("room", { length: 255 }),
+  teachingStaff: varchar("teachingStaff", { length: 255 })
+});
+
+//userClasses table
+export const userClasses = mysqlTable("userClasses", {
+  userId: varchar("userId", { length: 36 }).notNull().references(() => users.id),
+  classId: varchar("classId", { length: 36 }).notNull().references(() => classes.id)
 });

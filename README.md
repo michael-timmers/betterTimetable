@@ -137,6 +137,18 @@ Drizzle ORM doesn't automatically create the database for you. You'll need to cr
       ```bash
       npx drizzle-kit push
        ```
+
+> [!IMPORTANT]
+> How to make changes to the schema if push does not work
+> - First open mySQL Workbench and go into your profile
+> - On the left hand side, ensure you are on the schemas tab (not Administration) 
+> - Click on the dropdown next to the name "betterTimetable". This should dropdown details including Tables, Views and more. 
+> - Click on the dropdown next to "Tables". This should show the list of tables we have for the project found in schema.ts
+> - Right click on all of the tables (use ctrl + left click on each) and then right click to go "Drop Tables"
+> - A popup will appear. You want to click "Drop now"
+> - After these actions, there will no longer be any tables in the database. The npm drizzle-kit push command will now work if you try it again in the CLI
+
+
 5. Seed the Database:
     - Run your seed script to populate the database with initial data: <br>
 	  ```bash

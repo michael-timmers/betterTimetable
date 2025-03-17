@@ -1,7 +1,7 @@
 "use server";
 
 import { drizzle } from "drizzle-orm/mysql2";
-import { units, courses } from "../../../db/schema";
+import { units, timeslots } from "../../../db/schema";
 import { v4 as uuidv4 } from "uuid";
 
 export default async function uploadUnit(unitCode: string, courseData: any[], unitName?: string) {
@@ -20,11 +20,11 @@ export default async function uploadUnit(unitCode: string, courseData: any[], un
     // Insert the course data into the courses table
     const courseValues = courseData.map(course => ({
       id: course.id || uuidv4(), // Generate a UUID if ID is not provided
-      unitCode: unitCode,
+      unitId: unitCode,
       classType: course.classType,
       activity: course.activity,
       day: course.day,
-      time: course.time,
+      classTime: course.time,
       room: course.room,
       teachingStaff: course.teachingStaff,
     }));
@@ -32,7 +32,7 @@ export default async function uploadUnit(unitCode: string, courseData: any[], un
     console.log("Inserting into courses:", courseValues);
 
     await db
-      .insert(courses)
+      .insert(timeslots)
       .values(courseValues)
       .execute();
 

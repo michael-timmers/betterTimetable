@@ -80,8 +80,6 @@ const Details = () => {
   }, []);
 
 
-
-
   // Handlers for adding a unit
   const handleSearch = async () => {
     if (!unitCode) {

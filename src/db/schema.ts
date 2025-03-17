@@ -41,9 +41,10 @@ export const sessions = mysqlTable("sessions", {
 
 // Units Table
 export const units = mysqlTable("units", {
-  unitCode: varchar("unitCode", { length: 10 }).primaryKey(),
-  unitName: varchar("unitName", { length: 255 }).notNull(),
-  teachingPeriods: varchar("teachingPeriods", { length: 255 }).notNull(),
+  id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
+  unitCode: varchar("unitCode", { length: 255 }).unique(),
+  unitName: varchar("unitName", { length: 255 }),
+  periodId: varchar("periodId", { length: 36 }).notNull().references(() => teachingPeriods.id),
 });
 
 //teachingPeriods table
@@ -53,10 +54,9 @@ export const teachingPeriods = mysqlTable("teachingPeriods", {
 });
 
 // timeslots table
-export const timeslots = mysqlTable("classes", {
+export const timeslots = mysqlTable("timeslots", {
   id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
   unitId: varchar("unitId", { length: 36 }).notNull().references(() => units.id),
-  periodId: varchar("periodId", { length: 36 }).notNull().references(() => teachingPeriods.id),
   classType: varchar("classType", { length: 255 }),
   activity: varchar("activity", { length: 255 }),
   day: varchar("day", { length: 255 }),
@@ -68,5 +68,5 @@ export const timeslots = mysqlTable("classes", {
 //userClasses table
 export const userClasses = mysqlTable("userClasses", {
   userId: varchar("userId", { length: 36 }).notNull().references(() => users.id),
-  classId: varchar("classId", { length: 36 }).notNull().references(() => classes.id)
+  classId: varchar("classId", { length: 36 }).notNull().references(() => timeslots.id)
 });

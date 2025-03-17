@@ -9,6 +9,7 @@ import { sql } from "drizzle-orm";
 //sessions(_id#, userId#, expiresAt)
 //units(_id#, unitCode, unitName)
 //teachingPeriods(_id#, periodName)
+//unitTeachingPeriods(_UnitID#, periodID#)
 //classes(_id#, unitId#, periodId#, classTyhpe, activity, day, time, room, teachingStaff)
 //userClasses(userId#, classId#)
 
@@ -44,7 +45,6 @@ export const units = mysqlTable("units", {
   id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
   unitCode: varchar("unitCode", { length: 255 }).unique(),
   unitName: varchar("unitName", { length: 255 }),
-  periodId: varchar("periodId", { length: 36 }).notNull().references(() => teachingPeriods.id),
 });
 
 //teachingPeriods table
@@ -53,11 +53,17 @@ export const teachingPeriods = mysqlTable("teachingPeriods", {
   periodName: varchar("periodName", { length: 255 })
 });
 
+//unitTeachingPeriods table
+export const unitTeachingPeriods = mysqlTable("unitTeachingPeriods", {
+  unitId: varchar("unitId", { length: 36 }).notNull().references(() => units.id),
+  periodId: varchar("periodId", { length: 36 }).notNull().references(() => teachingPeriods.id),
+});
+
 // timeslots table
 export const timeslots = mysqlTable("timeslots", {
   id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
   unitId: varchar("unitId", { length: 36 }).notNull().references(() => units.id),
-  classType: varchar("classType", { length: 255 }),
+  Type: varchar("Type", { length: 255 }),
   activity: varchar("activity", { length: 255 }),
   day: varchar("day", { length: 255 }),
   classTime: varchar("classTime", { length: 50 }).notNull(),
@@ -66,7 +72,7 @@ export const timeslots = mysqlTable("timeslots", {
 });
 
 //userClasses table
-export const userClasses = mysqlTable("userClasses", {
+export const userTimeSlots = mysqlTable("userClasses", {
   userId: varchar("userId", { length: 36 }).notNull().references(() => users.id),
-  classId: varchar("classId", { length: 36 }).notNull().references(() => timeslots.id)
+  TimeSlotId: varchar("classId", { length: 36 }).notNull().references(() => timeslots.id)
 });

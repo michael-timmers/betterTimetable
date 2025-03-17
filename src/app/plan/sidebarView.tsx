@@ -17,11 +17,6 @@ const colorPalette = [
 ];
 
 
-
-
-
-
-
 const Details = () => {
   const [courseList, setCourseList] = useState<{ [key: string]: CourseData }>({});
   const [unitCode, setUnitCode] = useState("");

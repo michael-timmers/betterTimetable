@@ -10,7 +10,7 @@ import { sql } from "drizzle-orm";
 //units(_id#, unitCode, unitName)
 //teachingPeriods(_id#, periodName)
 //unitTeachingPeriods(_UnitID#, periodID#)
-//timeSlots(_id#, unitId#, type, activity, day, time, room, teachingStaff)
+//timeslots(_id#, unitId#, type, activity, day, time, room, teachingStaff)
 //userTimeSlots(userId#, timeSlotId#)
 
 // Users Table
@@ -72,7 +72,7 @@ export const timeslots = mysqlTable("timeslots", {
 });
 
 //userTimeslots table
-export const userTimeSlots = mysqlTable("userTimeSlots", {
+export const userTimeslots = mysqlTable("userTimeslots", {
   userId: varchar("userId", { length: 36 }).notNull().references(() => users.id),
-  TimeSlotId: varchar("classId", { length: 36 }).notNull().references(() => timeslots.id)
+  timeslotId: varchar("timeslotId", { length: 36 }).notNull().references(() => timeslots.id)
 });

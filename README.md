@@ -131,6 +131,11 @@ Drizzle ORM doesn't automatically create the database for you. You'll need to cr
       ```
 		Replace user and password with your MySQL credentials.
 
+3. Push database structure to mySQL Workbench
+   - Use Drizzle Kit to push changes
+      ```bash
+      npx drizzle-kit push
+       ```
 
 <br><br>
 

@@ -56,6 +56,8 @@ Please join our Discord Server at: [betterTimetable Discord](https://discord.gg/
 
 > https://nodejs.org/en/download
 > - Please note: You will need to restart VS Code after installing for it to take effect
+
+   
 <br><br>
 
 
@@ -73,7 +75,7 @@ npm install
 ```
 5. Duplicate `.env.example` to `.env` and update the `DATABASE_URL` to have your username, password, and port.
 
-<br><br>
+<br>
 
 ### Using GitHub from the CLI
 If you’re using the command line interface (CLI), follow these steps:
@@ -107,6 +109,8 @@ ERROR: Permission to codenetwork/betterTimetable.git denied
 fatal: Could not read from remote repository.
 ```
 To fix this, fork the repository and follow the steps above.
+
+
 <br><br>
 
 ## 🚀 Setup mySQL Database (after installing software)
@@ -127,7 +131,14 @@ Drizzle ORM doesn't automatically create the database for you. You'll need to cr
       ```
 		Replace user and password with your MySQL credentials.
 
-3. Generate and Apply Migrations:
+
+<br><br>
+
+## 🚀 How to populate the Database Schema
+
+Drizzle ORM doesn't automatically populate the database for you. We will need to push the changes for them to take effect. Here's how you can do it:
+
+1. Generate and Apply Migrations:
    - Use Drizzle Kit to generate and apply migrations:
      ```bash
         npx drizzle-kit generate
@@ -142,14 +153,14 @@ Drizzle ORM doesn't automatically create the database for you. You'll need to cr
 > How to make changes to the schema if push does not work
 > - First open mySQL Workbench and go into your profile
 > - On the left hand side, ensure you are on the schemas tab (not Administration) 
-> - Click on the dropdown next to the name "betterTimetable". This should dropdown details including Tables, Views and more. 
+> - Click on the dropdown next to the name "betterTimetable". This should now show the details including Tables, Views and more below
 > - Click on the dropdown next to "Tables". This should show the list of tables we have for the project found in schema.ts
 > - Right click on all of the tables (use ctrl + left click on each) and then right click to go "Drop Tables"
 > - A popup will appear. You want to click "Drop now"
 > - After these actions, there will no longer be any tables in the database. The npm drizzle-kit push command will now work if you try it again in the CLI
 
 
-5. Seed the Database:
+2. Seed the Database:
     - Run your seed script to populate the database with initial data: <br>
 	  ```bash
 	     npx tsx seed.ts

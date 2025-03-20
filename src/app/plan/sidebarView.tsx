@@ -268,7 +268,7 @@ const handleImportTimetable = async () => {
         [formattedUnitCode]: true,
       }));
     });
-    
+
     // Transform the imported data to match the `selectedCourses` structure
     setSelectedCourses({});
     const formattedCourses = Object.keys(formatted).reduce((acc, unitCode) => {
@@ -325,11 +325,12 @@ useEffect(() => {
   
   // Group courses by unit and activity
   const sidebarData = groupActivitiesByUnit(courseList);
+  console.log("sidebarData:", sidebarData)
 
   // Get selected units
   const selectedCourseList = getSelectedUnits(selectedCourses, courseList);
-  console.log("selectedCourseList:", selectedCourseList)
-  console.log("courseList:", courseList);
+  // console.log("selectedCourseList:", selectedCourseList)
+  // console.log("courseList:", courseList);
 
 
   // Render the unit/timeslot selection UI

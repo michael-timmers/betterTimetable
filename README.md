@@ -162,7 +162,7 @@ Drizzle ORM doesn't automatically populate the database for you. We will need to
 > - Click on the dropdown next to "Tables". This should show the list of tables we have for the project found in schema.ts
 > - Right click on all of the tables (use ctrl + left click on each) and then right click to go "Drop Tables"
 > - A popup will appear. You want to click "Drop now"
-> - After these actions, there will no longer be any tables in the database. The npm drizzle-kit push command will now work if you try it again in the CLI
+> - After these actions, there will no longer be any tables in the database. The npx drizzle-kit push command will now work if you try it again in the CLI
 
 
 2. Seed the Database:

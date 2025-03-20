@@ -1,7 +1,7 @@
 "use server";
-import { units, teachingPeriods, timeslots } from "../../db/schema"; // Updated table schemas, including timeslots
+import { units, teachingPeriods, timeslots, timetables, timetableTimeslots } from "../../db/schema"; // Updated table schemas, including timeslots
 import { drizzle } from "drizzle-orm/mysql2";
-import { eq, sql } from "drizzle-orm";
+import { eq, inArray, sql } from "drizzle-orm";
 
 // Define your base URL, either from an environment variable or fallback to localhost.
 const baseUrl = process.env.HOST_URL || "http://localhost:3000";
@@ -164,4 +164,187 @@ export const fetchCourseData = async (unitCode) => {
   }));
 
   return { unitName: unit.unitName, courses };
+};
+
+
+
+
+
+
+
+export const saveTimetable = async (userId, timetableName, timeslotIds) => {
+  // Establish database connection
+  const db = drizzle(process.env.DATABASE_URL!);
+  try {
+    // Insert a new timetable record
+    await db.insert(timetables).values({
+      userId: userId,
+      timetableName: timetableName,
+    });
+
+    // Fetch the newly inserted timetable by chaining .where() clauses
+    const [newTimetable] = await db
+      .select()
+      .from(timetables)
+      .where(eq(timetables.userId, userId))
+      .where(eq(timetables.timetableName, timetableName));
+
+    if (timeslotIds.length > 0) {
+      // Prepare join entries, ensuring both timetableId and timeslotId fields are provided.
+      const timetableTimeslotEntries = timeslotIds.map((timeslotId) => ({
+        timetableId: newTimetable.id,
+        timeslotId: timeslotId,
+      }));
+
+      await db.insert(timetableTimeslots).values(timetableTimeslotEntries);
+    }
+
+    console.log("Here is the new timetable :)", newTimetable);
+
+    return newTimetable;
+  } catch (error) {
+    console.error("Error saving timetable:", error);
+    throw error;
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**
+ * Loads all saved timetables for the given user.
+ * (Used to populate the dropdown list in your import dialog.)
+ */
+export const loadSavedTimetables = async (userId) => {
+  try {
+    const db = drizzle(process.env.DATABASE_URL!);
+    const userTimetables = await db
+      .select()
+      .from(timetables)
+      .where(eq(timetables.userId, userId));
+      
+    return userTimetables;
+  } catch (err) {
+    throw new Error(err.message);
+  }
+};
+
+
+
+/**
+ * Imports a timetable’s associated courses.
+ * Given a selected timetable ID, queries the join table to extract timeslot IDs,
+ * then returns the full timeslot details.
+ */
+export const importTimetable = async (selectedTimetableId) => {
+  const db = drizzle(process.env.DATABASE_URL!);
+
+  // 1. Query the join table to get timeslot associations for the given timetable.
+  const timetableAssociations = await db
+    .select()
+    .from(timetableTimeslots)
+    .where(eq(timetableTimeslots.timetableId, selectedTimetableId));
+
+  // Extract the timeslot IDs from the associations.
+  const importedTimeslotIds = timetableAssociations.map(
+    (assoc) => assoc.timeslotId
+  );
+
+  // 2. Fetch all timeslots for the unit codes associated with the timetable.
+  // Join with units to get full unit data.
+  const rawCoursesWithUnits = await db
+    .select({
+      id: timeslots.id,
+      unitId: timeslots.unitId,
+      teachingPeriodId: timeslots.teachingPeriodId,
+      classType: timeslots.type, // alias for the "type" field
+      activity: timeslots.activity,
+      day: timeslots.day,
+      classTime: timeslots.classTime,
+      room: timeslots.room,
+      teachingStaff: timeslots.teachingStaff,
+      unitCode: units.unitCode,
+      unitName: units.unitName,
+    })
+    .from(timeslots)
+    .innerJoin(units, eq(timeslots.unitId, units.id))
+    .where(inArray(timeslots.id, importedTimeslotIds));
+
+  // 3a. Use the unit codes from the associated timeslots to fetch all relevant timeslots.
+  const unitCodes = [...new Set(rawCoursesWithUnits.map((course) => course.unitCode))];
+  const allRelevantTimeslots = await db
+    .select({
+      id: timeslots.id,
+      unitId: timeslots.unitId,
+      teachingPeriodId: timeslots.teachingPeriodId,
+      classType: timeslots.type,
+      activity: timeslots.activity,
+      day: timeslots.day,
+      classTime: timeslots.classTime,
+      room: timeslots.room,
+      teachingStaff: timeslots.teachingStaff,
+      unitCode: units.unitCode,
+      unitName: units.unitName,
+    })
+    .from(timeslots)
+    .innerJoin(units, eq(timeslots.unitId, units.id))
+    .where(inArray(units.unitCode, unitCodes));
+
+  // 3b. Format coursesWithUnits to match the desired format.
+  const coursesWithUnits = {};
+  allRelevantTimeslots.forEach((timeslot) => {
+    const unitKey = timeslot.unitCode;
+    if (!coursesWithUnits[unitKey]) {
+      coursesWithUnits[unitKey] = {
+        unitName: timeslot.unitName,
+        courses: [],
+      };
+    }
+    coursesWithUnits[unitKey].courses.push({
+      id: timeslot.id,
+      unitId: timeslot.unitId,
+      teachingPeriodId: timeslot.teachingPeriodId,
+      classType: timeslot.classType,
+      activity: timeslot.activity,
+      day: timeslot.day,
+      time: timeslot.classTime, // map 'classTime' to 'time'
+      room: timeslot.room,
+      teachingStaff: timeslot.teachingStaff,
+    });
+  });
+
+  // 3c. Format the courses grouped by activity (formatted version) remains unchanged.
+  const formatted = {};
+  rawCoursesWithUnits.forEach((timeslot) => {
+    const unitKey = timeslot.unitCode;
+    if (!formatted[unitKey]) {
+      formatted[unitKey] = {
+        unitName: timeslot.unitName,
+        courses: {},
+      };
+    }
+    formatted[unitKey].courses[timeslot.activity] = {
+      id: timeslot.id,
+      unitCode: timeslot.unitCode,
+      unitName: timeslot.unitName,
+      activity: timeslot.activity,
+      day: timeslot.day,
+      time: timeslot.classTime,
+      room: timeslot.room,
+      teachingStaff: timeslot.teachingStaff,
+    };
+  });
+
+  return { coursesWithUnits, formatted };
 };

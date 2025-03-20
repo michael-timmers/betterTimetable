@@ -8,8 +8,8 @@ const TimetableView: React.FC<TimetableViewProps> = ({
   courseList,
   unitColors,
   preferences,
-  setTab,
 }) => {
+  console.log("HI! here is the courselist:", courseList);
 
   return (
     <>

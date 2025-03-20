@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import TimetableView from "./timetableView"; // Adjust the import path as needed
-import { Course, CourseData, groupActivitiesByUnit, getSelectedUnits } from "./manageTimeslots"
-import { fetchAvailablePeriods, fetchCourseData } from "./fetchData"
+import { groupActivitiesByUnit, getSelectedUnits } from "./manageTimeslots"
+import { fetchAvailablePeriods, fetchCourseData, saveTimetable, importTimetable, loadSavedTimetables } from "./fetchData"
 
 // Define a color palette to assign colors to units dynamically
 const colorPalette = [
@@ -17,17 +17,24 @@ const colorPalette = [
 ];
 
 
-const Details = () => {
-  const [courseList, setCourseList] = useState<{ [key: string]: CourseData }>({});
+const Details = ({ userId }: { userId: string }) => {
+  const [courseList, setCourseList] = useState({});
   const [unitCode, setUnitCode] = useState("");
   const [selectedPeriod, setSelectedPeriod] = useState("");
   const [loading, setLoading] = useState(false);
-  const [validPeriods, setValidPeriods] = useState<any[]>([]);
+  const [validPeriods, setValidPeriods] = useState([]);
   const [showDialog, setShowDialog] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedCourses, setSelectedCourses] = useState<Record<string, Record<string, Course>>>({});
-  const [unitColors, setUnitColors] = useState<{ [unitCode: string]: string }>({});
-  const [dropdownShow, setDropdownShow] = useState<{ [unitCode: string]: boolean }>({});
+  const [error, setError] = useState(null);
+  const [selectedCourses, setSelectedCourses] = useState({});
+  const [unitColors, setUnitColors] = useState({});
+  const [dropdownShow, setDropdownShow] = useState({});
+
+  // New state variables for timetable actions
+  const [saveTimetableDialogOpen, setSaveTimetableDialogOpen] = useState(false);
+  const [importTimetableDialogOpen, setImportTimetableDialogOpen] = useState(false);
+  const [timetableName, setTimetableName] = useState("");
+  const [savedTimetables, setSavedTimetables] = useState([]);
+  const [selectedTimetableId, setSelectedTimetableId] = useState("");
   
 
   const handleSearch = async (forceNew: string = "true") => {  /*
@@ -185,15 +192,146 @@ const handleRemoveUnit = (unitCodeToRemove: string) => {
   };
 
 
+// New handler: Save Timetable.
+const handleSaveTimetable = async () => {
+  if (!timetableName) {
+    setError("Please provide a timetable name.");
+    return;
+  }
+  // Gather all timeslot IDs from your selectedCourses.
+  let timeslotIds = [];
+  Object.values(selectedCourses).forEach((unitCourses) => {
+    // Instead of obtaining keys (which are course types), extract the actual course objects and get their id.
+    timeslotIds.push(...Object.values(unitCourses).map((course) => course.id));
+  });
+  
+  try {
+    // Call our direct-SQL helper using the proper parameters:
+    // Pass in the user.id, timetableName, and the gathered timeslotIds.
+    console.log("Here is the userId:", userId, "and timetable name", timetableName, "and IDs", timeslotIds);
+
+
+    await saveTimetable(userId, timetableName, timeslotIds);
+   
+    setSaveTimetableDialogOpen(false);
+
+  } catch (err) {
+    setError(err.message);
+  }
+};
+
+
+const handleImportTimetable = async () => {
+  if (!selectedTimetableId) {
+    setError("Please select a timetable to import.");
+    return;
+  }
+
+  try {
+    console.log("Importing timetable with ID:", selectedTimetableId);
+    // Directly call our helper function (imported from your server module)
+    const { coursesWithUnits, formatted } = await importTimetable(selectedTimetableId);
+
+    console.log("coursesWithUnits received:", coursesWithUnits);
+    console.log("formatted", formatted);
+
+
+
+    // SECTION FOR COURSE WITH UNITS
+
+    setCourseList({});
+    setUnitColors({});
+    Object.keys(coursesWithUnits).forEach((unitCode) => {
+      const unitData = coursesWithUnits[unitCode];
+      const formattedUnitCode = unitCode; // Assuming unitCode is already formatted
+    
+      // Update course list for the unit
+      setCourseList((prev) => ({
+        ...prev,
+        [formattedUnitCode]: unitData,
+      }));
+    
+      // Assign a unique color from the palette if not already used
+      setUnitColors((prev) => {
+        const usedColors = Object.values(prev);
+        const availableColor =
+          colorPalette.find((color) => !usedColors.includes(color)) || colorPalette[0];
+        return {
+          ...prev,
+          [formattedUnitCode]: availableColor,
+        };
+      });
+    
+      // Set the unit's timeslots to be visible by default
+      setDropdownShow((prev) => ({
+        ...prev,
+        [formattedUnitCode]: true,
+      }));
+    });
+
+    // Transform the imported data to match the `selectedCourses` structure
+    setSelectedCourses({});
+    const formattedCourses = Object.keys(formatted).reduce((acc, unitCode) => {
+      const unitData = formatted[unitCode];
+      const unitCourses = unitData.courses;
+
+      // If `unitCourses` is an array, process it. Otherwise, handle as object.
+      if (Array.isArray(unitCourses)) {
+        const activityGroups = unitCourses.reduce((activityAcc, course) => {
+          if (!activityAcc[course.activity]) {
+            activityAcc[course.activity] = course; // Add the course by its activity
+          }
+          return activityAcc;
+        }, {});
+
+        acc[unitCode] = activityGroups;
+      } else {
+        // Handle case where `unitCourses` might already be an object
+        acc[unitCode] = unitCourses;
+      }
+
+      return acc;
+    }, {});
+
+    // Update your state with the transformed data
+    setSelectedCourses((prev) => ({ ...prev, ...formattedCourses }));
+
+    setImportTimetableDialogOpen(false);
+    setSelectedTimetableId("");
+  } catch (err) {
+    setError(err.message);
+  }
+};
+
+
+
+
+useEffect(() => {
+  if (importTimetableDialogOpen) {
+    (async () => {
+      try {
+        const timetablesFound = await loadSavedTimetables(userId);
+        setSavedTimetables(timetablesFound);
+
+      } catch (err) {
+        setError(err.message);
+      }
+    })();
+  }
+}, [importTimetableDialogOpen]);
+
 
 
   
   // Group courses by unit and activity
   const sidebarData = groupActivitiesByUnit(courseList);
+  console.log("sidebarData:", sidebarData)
 
   // Get selected units
   const selectedCourseList = getSelectedUnits(selectedCourses, courseList);
-  
+  // console.log("selectedCourseList:", selectedCourseList)
+  // console.log("courseList:", courseList);
+
 
   // Render the unit/timeslot selection UI
   return (
@@ -250,6 +388,85 @@ const handleRemoveUnit = (unitCodeToRemove: string) => {
         </div>
       )}
 
+
+    {saveTimetableDialogOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+          onClick={() => setSaveTimetableDialogOpen(false)}
+        >
+          <div
+            className="bg-white border border-blue-1400 p-6 rounded-lg relative z-60"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setSaveTimetableDialogOpen(false)}
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-800"
+            >
+              ✖
+            </button>
+            <h2 className="text-xl mb-4 font-semibold text-blue-1300">
+              Save
+            </h2>
+            <input
+              type="text"
+              placeholder="Enter timetable name"
+              value={timetableName}
+              onChange={(e) => setTimetableName(e.target.value)}
+              className="mb-4 px-6 py-2 w-full rounded-lg border bg-gray-100 text-gray-600"
+            />
+            <button
+              onClick={handleSaveTimetable}
+              className="px-4 py-2 bg-blue-1300 text-white rounded-full"
+            >
+              Confirm
+            </button>
+          </div>
+        </div>
+      )}
+
+      {importTimetableDialogOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+          onClick={() => setImportTimetableDialogOpen(false)}
+        >
+          <div
+            className="bg-white border border-blue-1400 p-6 rounded-lg relative z-60"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setImportTimetableDialogOpen(false)}
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-800"
+            >
+              ✖
+            </button>
+            <h2 className="text-xl mb-4 font-semibold text-blue-1300">
+              Import
+            </h2>
+            <select
+              className="mb-4 px-6 py-2 w-full rounded-lg bg-gray-200 text-gray-600"
+              value={selectedTimetableId}
+              onChange={(e) => setSelectedTimetableId(e.target.value)}
+            >
+              <option value="">Select Timetable</option>
+              {savedTimetables.map((tt) => (
+                <option key={tt.id} value={tt.id}>
+                  {tt.timetableName}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={handleImportTimetable}
+              className="px-4 py-2 bg-blue-1300 text-white rounded-full"
+            >
+              Confirm
+            </button>
+          </div>
+        </div>
+      )}
+
+
+
+
       <section className="w-full md:w-1/4 p-6 bg-blue-1500 border-r border-gray-300">
       <div className="flex items-center justify-center w-full h-10 mb-6">
         {loading ? (
@@ -274,6 +491,21 @@ const handleRemoveUnit = (unitCodeToRemove: string) => {
         )}
       </div>
       {error && <p className="text-red-500 mb-4">{error}</p>}
+      
+      <div className="flex mt-4 mb-8 inline-block space-x-4">        
+        <button
+          onClick={() => setSaveTimetableDialogOpen(true)}
+          className="px-4 py-2 bg-blue-1300 hover:bg-blue-1100 text-white rounded-full"
+        >
+          Save Timetable
+        </button>
+        <button
+          onClick={() => setImportTimetableDialogOpen(true)}
+          className="px-4 py-2 bg-blue-1300 hover:bg-blue-1100 text-white rounded-full"
+        >
+          Import Timetable
+        </button>
+      </div>
 
         <div>
           {Object.keys(sidebarData)
